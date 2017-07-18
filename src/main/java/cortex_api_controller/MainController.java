@@ -5,23 +5,17 @@ import classification_models.Classifier;
 
 import org.springframework.web.bind.annotation.PathVariable;
 import org.springframework.web.bind.annotation.RequestMapping;
-import org.springframework.web.bind.annotation.ResponseBody;
 import org.springframework.web.bind.annotation.RestController;
 
-import training.TrainLocal;
+import training.ImageTrainer;
+import training.ImageTrainingProcess;
 
-import java.io.IOException;
-import java.io.StringWriter;
-import java.lang.reflect.Field;
+
 import java.util.ArrayList;
+
 import java.util.HashMap;
-import java.util.concurrent.CompletableFuture;
-import java.util.concurrent.ExecutionException;
 import java.util.concurrent.ExecutorService;
 import java.util.concurrent.Executors;
-import java.util.regex.Matcher;
-import java.util.regex.Pattern;
-import java.util.stream.Stream;
 
 /**
  * Created by John on 7/15/2017.
@@ -30,44 +24,69 @@ import java.util.stream.Stream;
 @RestController
 public class MainController {
 
-    static Process process;
-    private ExecutorService service = Executors.newCachedThreadPool();
+    //monitor process
+    //UID, Process Object
+    private HashMap<String, ImageTrainingProcess> processes = new HashMap();
 
-    @RequestMapping("/hello")
-    public String hello() {
-        return "HELLO WORLD";
-    }
+    private static ExecutorService service = Executors.newSingleThreadExecutor();
 
-    @RequestMapping("/classify/{user}")
-    public ArrayList<Classification> classify(@PathVariable String user) {
+    @RequestMapping("/api/classify/{key}/{path}")
+    public ArrayList<Classification> classify(@PathVariable String key, @PathVariable String path) {
+
+        //api key is used for verification
+
         Classifier classifier = new Classifier();
-        ArrayList<Classification> classifications = classifier.classifyImage(user);
+        ArrayList<Classification> classifications = classifier.classifyImage(path);
         return classifications;
     }
 
-    @RequestMapping("/train/{user}/{category}/{training_steps}")
-    public String train(@PathVariable String user, @PathVariable String category,
+    @RequestMapping("/api/train/{key}/{category}/{training_steps}")
+    public String train(@PathVariable String key, @PathVariable String category,
                         @PathVariable int training_steps) throws NoSuchFieldException, IllegalAccessException {
 
-        process = new TrainLocal().startTraining(user, category, training_steps);
-        System.out.println("PARENT PROCESS" + process.pid());
-
-        process.children().forEach(v -> {
-            System.out.println(v.pid() + " " + v.info().command() + " ");
-
-            v.children().forEach(w-> {
-                System.out.println(w.pid());
+        //user may train models only one at a time
+        //start training only if process is null
+        if (processes.get(key) == null) {
+            //create new process
+            service.execute(new Runnable() {
+                @Override
+                public void run() {
+                    Process process = new ImageTrainer().startTraining(key, category, training_steps);
+                    //add process to monitored trainings so user can stop them later
+                    ImageTrainingProcess trainingProcess = new ImageTrainingProcess();
+                    trainingProcess.setProcess(process);
+                    trainingProcess.setCategory(category);
+                    processes.put(key, trainingProcess);
+                }
             });
-        });
+            return "Training Started";
+        }
 
-        return "Training Started";
+        return "User is already training a model";
     }
 
-    @RequestMapping("/stop/{user}")
-    public String stop(@PathVariable String user) {
-//        process.destroy();
-        return process.pid() + "";
+    @RequestMapping("/api/stop/{key}")
+    public String stop(@PathVariable String key) {
+
+        ImageTrainingProcess trainingProcess = processes.get(key);
+
+        if (trainingProcess == null || trainingProcess.getProcess() == null)
+            return "User is not training a model";
+        else
+            trainingProcess.getProcess().destroy();
+        return "Training stopped";
     }
 
+    //get runtime of process in seconds
+    @RequestMapping("/api/status/runtime/{key}")
+    public String runtime(@PathVariable String key) {
+        ImageTrainingProcess process = processes.get(key);
 
+        if (process == null)
+            return "Not found";
+        else {
+
+            return process.getProcess().info().totalCpuDuration().toString();
+        }
+    }
 }
