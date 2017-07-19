@@ -1,4 +1,4 @@
-package classification_models;
+package models.classification_models;
 
 import java.util.Comparator;
 

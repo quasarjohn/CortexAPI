@@ -1,12 +1,22 @@
-package training; /**
+package models.training_models; /**
  * Created by John on 7/15/2017.
  */
 
 
 import values.SystemPaths;
 
+import java.util.HashMap;
+import java.util.concurrent.FutureTask;
 
-public class ImageTrainer {
+
+public class ImageTrainingService {
+
+    public HashMap<String, ImageTrainingProcess> processMap;
+
+    public void setProcessMap(HashMap<String, ImageTrainingProcess> processMap) {
+        this.processMap = processMap;
+    }
+
     public Process startTraining(String user, String category, int trainingSteps) {
         Process p = null;
         try {
@@ -39,6 +49,13 @@ public class ImageTrainer {
                     "--image_dir", training_images_path);
             p = builder.inheritIO().start();
 
+
+//            System.out.println("TRAINING COMPLETED FOR " + user);
+//
+//            //once training is done, remove process from hash map to allow user to train new models
+//            ImageTrainingProcess process = processMap.get(user);
+//            process.setStatus(ImageTrainingProcess.TrainingStatus.COMPLETE);
+//            process.setRuntime(process.getProcess().info().totalCpuDuration().toString());
         } catch (Exception e) {
             e.printStackTrace();
         }

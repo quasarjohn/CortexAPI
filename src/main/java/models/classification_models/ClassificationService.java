@@ -1,4 +1,4 @@
-package classification_models;
+package models.classification_models;
 
 import java.io.IOException;
 import java.io.PrintStream;
@@ -20,7 +20,7 @@ import org.tensorflow.TensorFlow;
 /**
  * Sample use of the TensorFlow Java API to label images using a pre-trained model.
  */
-public class Classifier {
+public class ClassificationService {
 
     public ArrayList<Classification> classifyImage(String img_path) {
         ArrayList<Classification> classifications = new ArrayList<>();

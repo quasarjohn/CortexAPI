@@ -1,6 +1,6 @@
-package training;
+package models.training_models;
 
-public class RuntimeStatus {
+public class ImageTrainingRuntime {
 
     private String category;
     private String runtime;
