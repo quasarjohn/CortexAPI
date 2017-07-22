@@ -5,8 +5,9 @@ import java.util.Comparator;
 /**
  * Created by John on 7/14/2017.
  */
-public class Classification implements Comparable<Classification>{
+public class Classification {
 
+    private String status;
     private String label;
     private float probability;
 
@@ -26,16 +27,11 @@ public class Classification implements Comparable<Classification>{
         this.probability = probability;
     }
 
-    @Override
-    public int compareTo(Classification o) {
-        return 0;
+    public String getStatus() {
+        return status;
     }
 
-    public static Comparator<Classification> ProbabilityComparator =
-            new Comparator<Classification>() {
-                @Override
-                public int compare(Classification c1, Classification c2) {
-                    return (int) (c1.getProbability() - c2.getProbability());
-                }
-            };
+    public void setStatus(String status) {
+        this.status = status;
+    }
 }
