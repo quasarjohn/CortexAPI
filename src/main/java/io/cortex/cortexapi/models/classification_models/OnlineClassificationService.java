@@ -1,7 +1,15 @@
-package models.classification_models;
+package io.cortex.cortexapi.models.classification_models;
 
+import org.tensorflow.*;
+
+import javax.imageio.ImageIO;
+import java.awt.image.BufferedImage;
+import java.io.ByteArrayOutputStream;
 import java.io.IOException;
 import java.io.PrintStream;
+import java.io.UnsupportedEncodingException;
+import java.net.URL;
+import java.net.URLDecoder;
 import java.nio.charset.Charset;
 import java.nio.file.Files;
 import java.nio.file.Path;
@@ -10,29 +18,18 @@ import java.util.ArrayList;
 import java.util.Arrays;
 import java.util.List;
 
-import org.tensorflow.DataType;
-import org.tensorflow.Graph;
-import org.tensorflow.Output;
-import org.tensorflow.Session;
-import org.tensorflow.Tensor;
-import org.tensorflow.TensorFlow;
+public class OnlineClassificationService {
 
-/**
- * Sample use of the TensorFlow Java API to label images using a pre-trained model.
- */
-public class ClassificationService {
-
-    public ArrayList<Classification> classifyImage(String img_path) {
-        ArrayList<Classification> classifications = new ArrayList<>();
-        Classification classification = new Classification();
+    public List<Classification> classifyImage(String img_url, int max_results, String order)
+            throws UnsupportedEncodingException {
+        List<Classification> classifications = new ArrayList<>();
 
         String modelDir = "Z://tf_files/";
-        String imageFile = "Z://tf_files/" + img_path + ".jpg";
 
         byte[] graphDef = readAllBytesOrExit(Paths.get(modelDir, "retrained_graph.pb"));
         List<String> labels =
                 readAllLinesOrExit(Paths.get(modelDir, "retrained_labels.txt"));
-        byte[] imageBytes = readAllBytesOrExit(Paths.get(imageFile));
+        byte[] imageBytes = URL_to_byte(URLDecoder.decode(img_url, "UTF-8"));
 
         try (Tensor image = constructAndExecuteGraphToNormalizeImage(imageBytes)) {
             float[] labelProbabilities = executeInceptionGraph(graphDef, image);
@@ -41,22 +38,60 @@ public class ClassificationService {
                     String.format(
                             "BEST MATCH: %s (%.2f%% likely)",
                             labels.get(bestLabelIdx), labelProbabilities[bestLabelIdx] * 100f));
-            classification.setLabel(labels.get(bestLabelIdx));
-            classification.setProbability(labelProbabilities[bestLabelIdx] * 100f);
 
-            for (int i = 0; i < labels.size(); i++) {
+            Classification classification = new Classification();
+            classification.setLabel(labels.get(bestLabelIdx));
+            classification.setProbability(labelProbabilities[bestLabelIdx]);
+            classifications.add(classification);
+
+
+            //this is to avoid out of bounds exception if the user sets a higher value than the size of the labels
+            if (max_results > labels.size() || max_results == 0)
+                max_results = labels.size();
+
+            Classification[] classificationArray = new Classification[max_results];
+            for (int i = 0; i < classificationArray.length; i++) {
                 Classification c = new Classification();
                 c.setLabel(labels.get(i));
                 c.setProbability(labelProbabilities[i]);
-                classifications.add(c);
+                classificationArray[i] = c;
             }
+
+            //sort the classifications
+            if (order.equals("label_asc"))
+                Arrays.sort(classificationArray, Classification.ClassificationLabelComparatorAsc);
+            else if (order.equals("label_desc"))
+                Arrays.sort(classificationArray, Classification.ClassificationLabelComparatorDesc);
+            else if (order.equals("probability_asc"))
+                Arrays.sort(classificationArray, Classification.ClassificationLabelComparatorAsc);
+            else
+                //if user enters anything, it will return the results in descending order based on the probability
+                Arrays.sort(classificationArray, Classification.ClassificationLabelComparatorDesc);
+
+            //convert to list that can be returned as json
+            classifications = Arrays.asList(classificationArray);
         }
         return classifications;
     }
 
+    private byte[] URL_to_byte(String path) {
+        byte[] imageInByte = null;
+        try {
+            BufferedImage img = ImageIO.read(new URL(path));
+            ByteArrayOutputStream baos = new ByteArrayOutputStream();
+            ImageIO.write(img, "jpg", baos);
+            baos.flush();
+            imageInByte = baos.toByteArray();
+            baos.close();
+        } catch (IOException e) {
+            e.printStackTrace();
+        }
+        return imageInByte;
+    }
+
     private static void printUsage(PrintStream s) {
         final String url =
-                "https://storage.googleapis.com/download.tensorflow.org/models/inception5h.zip";
+                "https://storage.googleapis.com/download.tensorflow.org/io.cortex.cortexapi.models/inception5h.zip";
         s.println(
                 "Java program that uses a pre-trained Inception model (http://arxiv.org/abs/1512.00567)");
         s.println("to label JPEG images.");

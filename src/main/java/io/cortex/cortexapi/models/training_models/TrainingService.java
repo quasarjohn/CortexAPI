@@ -1,9 +1,9 @@
-package models.training_models; /**
+package io.cortex.cortexapi.models.training_models; /**
  * Created by John on 7/15/2017.
  */
 
 
-import utils.SystemPaths;
+import io.cortex.cortexapi.utils.SystemPaths;
 
 import java.io.File;
 
@@ -55,7 +55,7 @@ public class TrainingService {
 
 //            System.out.println("TRAINING COMPLETED FOR " + user);
 //
-//            //once training is done, remove process from hash map to allow user to train new models
+//            //once training is done, remove process from hash map to allow user to train new io.cortex.cortexapi.models
 //            ImageTrainingProcess process = processMap.get(user);
 //            process.setStatus(ImageTrainingProcess.TrainingStatus.COMPLETE);
 //            process.setRuntime(process.getProcess().info().totalCpuDuration().toString());

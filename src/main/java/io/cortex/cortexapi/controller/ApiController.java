@@ -1,29 +1,24 @@
-package controller;
+package io.cortex.cortexapi.controller;
 
 import com.google.common.util.concurrent.*;
-import models.classification_models.Classification;
-import models.classification_models.ClassificationService;
 
-import models.classification_models.OnlineClassificationService;
-import models.return_models.ReturnCode;
-import models.return_models.ReturnContent;
-import models.return_models.ReturnObject;
-import models.training_models.ReturnableTrainingProcess;
-import models.training_models.TrainingLog;
+import io.cortex.cortexapi.models.classification_models.OnlineClassificationService;
+import io.cortex.cortexapi.models.return_models.ReturnCode;
+import io.cortex.cortexapi.models.return_models.ReturnObject;
+import io.cortex.cortexapi.models.training_models.ReturnableTrainingProcess;
+import io.cortex.cortexapi.models.training_models.TrainingLog;
 import org.springframework.web.bind.annotation.*;
 
-import models.training_models.TrainingService;
-import models.training_models.TrainingProcess;
-import utils.ImageDirectoryUtils;
-import utils.SystemPaths;
-import utils.Utils;
+import io.cortex.cortexapi.models.training_models.TrainingService;
+import io.cortex.cortexapi.models.training_models.TrainingProcess;
+import io.cortex.cortexapi.utils.ImageDirectoryUtils;
+import io.cortex.cortexapi.utils.SystemPaths;
+import io.cortex.cortexapi.utils.Utils;
 
 import javax.annotation.Nullable;
 import java.io.File;
 import java.io.FileNotFoundException;
 import java.io.UnsupportedEncodingException;
-import java.net.URLDecoder;
-import java.net.URLEncoder;
 import java.util.*;
 
 import java.util.concurrent.Callable;
@@ -79,7 +74,7 @@ public class ApiController {
         //category is also the title of the classifier
         //increasing the training steps increases the accuracy of the training
 
-        //user may train models only one at a time
+        //user may train io.cortex.cortexapi.models only one at a time
         //start training only if user is not training currently
         if (!Utils.userIsTraining(processes.get(api_key))) {
             //create new process

@@ -12,7 +12,7 @@
 # See the License for the specific language governing permissions and
 # limitations under the License.
 # ==============================================================================
-r"""Simple transfer learning with Inception v3 or Mobilenet models.
+r"""Simple transfer learning with Inception v3 or Mobilenet io.cortex.cortexapi.models.
 
 With support for TensorBoard.
 
@@ -39,7 +39,7 @@ should have a structure like this:
 
 The subfolder names are important, since they define what label is applied to
 each image, but the filenames themselves don't matter. Once your images are
-prepared, you can run the models.training_models with a command like this:
+prepared, you can run the io.cortex.cortexapi.models.training_models with a command like this:
 
 
 ```bash
@@ -65,7 +65,7 @@ program, for example the label_image sample code.
 
 By default this script will use the high accuracy, but comparatively large and
 slow Inception v3 model architecture. It's recommended that you start with this
-to validate that you have gathered good models.training_models data, but if you want to deploy
+to validate that you have gathered good io.cortex.cortexapi.models.training_models data, but if you want to deploy
 on resource-limited platforms, you can try the `--architecture` flag with a
 Mobilenet model. For example:
 
@@ -74,11 +74,11 @@ python tensorflow/examples/image_retraining/retrain.py \
     --image_dir ~/flower_photos --architecture mobilenet_1.0_224
 ```
 
-There are 32 different Mobilenet models to choose from, with a variety of file
+There are 32 different Mobilenet io.cortex.cortexapi.models to choose from, with a variety of file
 size and latency options. The first number can be '1.0', '0.75', '0.50', or
 '0.25' to control the size, and the second controls the input image size, either
 '224', '192', '160', or '128', with smaller sizes running faster. See
-https://research.googleblog.com/2017/06/mobilenets-open-source-models-for.html
+https://research.googleblog.com/2017/06/mobilenets-open-source-io.cortex.cortexapi.models-for.html
 for more information on Mobilenet.
 
 To use with TensorBoard:
@@ -122,10 +122,10 @@ MAX_NUM_IMAGES_PER_CLASS = 2 ** 27 - 1  # ~134M
 
 
 def create_image_lists(image_dir, testing_percentage, validation_percentage):
-    """Builds a list of models.training_models images from the file system.
+    """Builds a list of io.cortex.cortexapi.models.training_models images from the file system.
 
     Analyzes the sub folders in the image directory, splits them into stable
-    models.training_models, testing, and validation sets, and returns a data structure
+    io.cortex.cortexapi.models.training_models, testing, and validation sets, and returns a data structure
     describing the lists of images for each label and their paths.
 
     Args:
@@ -135,7 +135,7 @@ def create_image_lists(image_dir, testing_percentage, validation_percentage):
 
     Returns:
       A dictionary containing an entry for each label subfolder, with images split
-      into models.training_models, testing, and validation sets within each label.
+      into io.cortex.cortexapi.models.training_models, testing, and validation sets within each label.
     """
     if not gfile.Exists(image_dir):
         tf.logging.error("Image directory '" + image_dir + "' not found.")
@@ -181,7 +181,7 @@ def create_image_lists(image_dir, testing_percentage, validation_percentage):
             # the same leaf.
             hash_name = re.sub(r'_nohash_.*$', '', file_name)
             # This looks a bit magical, but we need to decide whether this file should
-            # go into the models.training_models, testing, or validation sets, and we want to keep
+            # go into the io.cortex.cortexapi.models.training_models, testing, or validation sets, and we want to keep
             # existing files in the same set even if more files are subsequently
             # added.
             # To do that, we need a stable way of deciding based on just the file name
@@ -199,7 +199,7 @@ def create_image_lists(image_dir, testing_percentage, validation_percentage):
                 training_images.append(base_name)
         result[label_name] = {
             'dir': dir_name,
-            'models.training_models': training_images,
+            'io.cortex.cortexapi.models.training_models': training_images,
             'testing': testing_images,
             'validation': validation_images,
         }
@@ -210,13 +210,13 @@ def get_image_path(image_lists, label_name, index, image_dir, category):
     """"Returns a path to an image for a label at the given index.
 
     Args:
-      image_lists: Dictionary of models.training_models images for each label.
+      image_lists: Dictionary of io.cortex.cortexapi.models.training_models images for each label.
       label_name: Label string we want to get an image for.
       index: Int offset of the image we want. This will be moduloed by the
       available number of images for the label, so it can be arbitrarily large.
-      image_dir: Root folder string of the subfolders containing the models.training_models
+      image_dir: Root folder string of the subfolders containing the io.cortex.cortexapi.models.training_models
       images.
-      category: Name string of set to pull images from - models.training_models, testing, or
+      category: Name string of set to pull images from - io.cortex.cortexapi.models.training_models, testing, or
       validation.
 
     Returns:
@@ -244,12 +244,12 @@ def get_bottleneck_path(image_lists, label_name, index, bottleneck_dir,
     """"Returns a path to a bottleneck file for a label at the given index.
 
     Args:
-      image_lists: Dictionary of models.training_models images for each label.
+      image_lists: Dictionary of io.cortex.cortexapi.models.training_models images for each label.
       label_name: Label string we want to get an image for.
       index: Integer offset of the image we want. This will be moduloed by the
       available number of images for the label, so it can be arbitrarily large.
       bottleneck_dir: Folder string holding cached files of bottleneck values.
-      category: Name string of set to pull images from - models.training_models, testing, or
+      category: Name string of set to pull images from - io.cortex.cortexapi.models.training_models, testing, or
       validation.
       architecture: The name of the model architecture.
 
@@ -389,13 +389,13 @@ def get_or_create_bottleneck(sess, image_lists, label_name, index, image_dir,
 
     Args:
       sess: The current active TensorFlow Session.
-      image_lists: Dictionary of models.training_models images for each label.
+      image_lists: Dictionary of io.cortex.cortexapi.models.training_models images for each label.
       label_name: Label string we want to get an image for.
       index: Integer offset of the image we want. This will be modulo-ed by the
       available number of images for the label, so it can be arbitrarily large.
-      image_dir: Root folder string  of the subfolders containing the models.training_models
+      image_dir: Root folder string  of the subfolders containing the io.cortex.cortexapi.models.training_models
       images.
-      category: Name string of which  set to pull images from - models.training_models, testing,
+      category: Name string of which  set to pull images from - io.cortex.cortexapi.models.training_models, testing,
       or validation.
       bottleneck_dir: Folder string holding cached files of bottleneck values.
       jpeg_data_tensor: The tensor to feed loaded jpeg data into.
@@ -442,19 +442,19 @@ def get_or_create_bottleneck(sess, image_lists, label_name, index, image_dir,
 def cache_bottlenecks(sess, image_lists, image_dir, bottleneck_dir,
                       jpeg_data_tensor, decoded_image_tensor,
                       resized_input_tensor, bottleneck_tensor, architecture):
-    """Ensures all the models.training_models, testing, and validation bottlenecks are cached.
+    """Ensures all the io.cortex.cortexapi.models.training_models, testing, and validation bottlenecks are cached.
 
     Because we're likely to read the same image multiple times (if there are no
-    distortions applied during models.training_models) it can speed things up a lot if we
+    distortions applied during io.cortex.cortexapi.models.training_models) it can speed things up a lot if we
     calculate the bottleneck layer values once for each image during
     preprocessing, and then just read those cached values repeatedly during
-    models.training_models. Here we go through all the images we've found, calculate those
+    io.cortex.cortexapi.models.training_models. Here we go through all the images we've found, calculate those
     values, and save them off.
 
     Args:
       sess: The current active TensorFlow Session.
-      image_lists: Dictionary of models.training_models images for each label.
-      image_dir: Root folder string of the subfolders containing the models.training_models
+      image_lists: Dictionary of io.cortex.cortexapi.models.training_models images for each label.
+      image_dir: Root folder string of the subfolders containing the io.cortex.cortexapi.models.training_models
       images.
       bottleneck_dir: Folder string holding cached files of bottleneck values.
       jpeg_data_tensor: Input tensor for jpeg data from file.
@@ -469,7 +469,7 @@ def cache_bottlenecks(sess, image_lists, image_dir, bottleneck_dir,
     how_many_bottlenecks = 0
     ensure_dir_exists(bottleneck_dir)
     for label_name, label_lists in image_lists.items():
-        for category in ['models.training_models', 'testing', 'validation']:
+        for category in ['io.cortex.cortexapi.models.training_models', 'testing', 'validation']:
             category_list = label_lists[category]
             for index, unused_base_name in enumerate(category_list):
                 get_or_create_bottleneck(
@@ -494,13 +494,13 @@ def get_random_cached_bottlenecks(sess, image_lists, how_many, category,
 
     Args:
       sess: Current TensorFlow Session.
-      image_lists: Dictionary of models.training_models images for each label.
+      image_lists: Dictionary of io.cortex.cortexapi.models.training_models images for each label.
       how_many: If positive, a random sample of this size will be chosen.
       If negative, all bottlenecks will be retrieved.
-      category: Name string of which set to pull from - models.training_models, testing, or
+      category: Name string of which set to pull from - io.cortex.cortexapi.models.training_models, testing, or
       validation.
       bottleneck_dir: Folder string holding cached files of bottleneck values.
-      image_dir: Root folder string of the subfolders containing the models.training_models
+      image_dir: Root folder string of the subfolders containing the io.cortex.cortexapi.models.training_models
       images.
       jpeg_data_tensor: The layer to feed jpeg image data into.
       decoded_image_tensor: The output of decoding and resizing the image.
@@ -555,9 +555,9 @@ def get_random_cached_bottlenecks(sess, image_lists, how_many, category,
 def get_random_distorted_bottlenecks(
         sess, image_lists, how_many, category, image_dir, input_jpeg_tensor,
         distorted_image, resized_input_tensor, bottleneck_tensor):
-    """Retrieves bottleneck values for models.training_models images, after distortions.
+    """Retrieves bottleneck values for io.cortex.cortexapi.models.training_models images, after distortions.
 
-    If we're models.training_models with distortions like crops, scales, or flips, we have to
+    If we're io.cortex.cortexapi.models.training_models with distortions like crops, scales, or flips, we have to
     recalculate the full model for every image, and so we can't use cached
     bottleneck values. Instead we find random images for the requested category,
     run them through the distortion graph, and then the full graph to get the
@@ -565,11 +565,11 @@ def get_random_distorted_bottlenecks(
 
     Args:
       sess: Current TensorFlow Session.
-      image_lists: Dictionary of models.training_models images for each label.
+      image_lists: Dictionary of io.cortex.cortexapi.models.training_models images for each label.
       how_many: The integer number of bottleneck values to return.
-      category: Name string of which set of images to fetch - models.training_models, testing,
+      category: Name string of which set of images to fetch - io.cortex.cortexapi.models.training_models, testing,
       or validation.
-      image_dir: Root folder string of the subfolders containing the models.training_models
+      image_dir: Root folder string of the subfolders containing the io.cortex.cortexapi.models.training_models
       images.
       input_jpeg_tensor: The input layer we feed the image data to.
       distorted_image: The output node of the distortion graph.
@@ -629,7 +629,7 @@ def add_input_distortions(flip_left_right, random_crop, random_scale,
                           input_depth, input_mean, input_std):
     """Creates the operations to apply the specified distortions.
 
-    During models.training_models it can help to improve the results if we run the images
+    During io.cortex.cortexapi.models.training_models it can help to improve the results if we run the images
     through simple distortions like crops, scales, and flips. These reflect the
     kind of variations we expect in the real world, and so can help train the
     model to cope with natural data more effectively. Here we take the supplied
@@ -735,7 +735,7 @@ def variable_summaries(var):
 
 def add_final_training_ops(class_count, final_tensor_name, bottleneck_tensor,
                            bottleneck_tensor_size):
-    """Adds a new softmax and fully-connected layer for models.training_models.
+    """Adds a new softmax and fully-connected layer for io.cortex.cortexapi.models.training_models.
 
     We need to retrain the top layer to identify our new classes, so this function
     adds the right operations to the graph, along with some variables to hold the
@@ -752,7 +752,7 @@ def add_final_training_ops(class_count, final_tensor_name, bottleneck_tensor,
       bottleneck_tensor_size: How many entries in the bottleneck vector.
 
     Returns:
-      The tensors for the models.training_models and cross entropy results, and tensors for the
+      The tensors for the io.cortex.cortexapi.models.training_models and cross entropy results, and tensors for the
       bottleneck input and ground truth input.
     """
     with tf.name_scope('input'):
@@ -844,7 +844,7 @@ def prepare_file_system():
 def create_model_info(architecture):
     """Given the name of a model architecture, returns information about it.
 
-    There are different base image recognition pretrained models that can be
+    There are different base image recognition pretrained io.cortex.cortexapi.models that can be
     retrained using transfer learning, and this function translates from the name
     of a model to the attributes that are needed to download and train with it.
 
@@ -861,7 +861,7 @@ def create_model_info(architecture):
     architecture = architecture.lower()
     if architecture == 'inception_v3':
         # pylint: disable=line-too-long
-        data_url = 'http://download.tensorflow.org/models/image/imagenet/inception-2015-12-05.tgz'
+        data_url = 'http://download.tensorflow.org/io.cortex.cortexapi.models/image/imagenet/inception-2015-12-05.tgz'
         # pylint: enable=line-too-long
         bottleneck_tensor_name = 'pool_3/_reshape:0'
         bottleneck_tensor_size = 2048
@@ -903,7 +903,7 @@ def create_model_info(architecture):
                     architecture)
                 return None
             is_quantized = True
-        data_url = 'http://download.tensorflow.org/models/mobilenet_v1_'
+        data_url = 'http://download.tensorflow.org/io.cortex.cortexapi.models/mobilenet_v1_'
         data_url += version_string + '_' + size_string + '_frozen.tgz'
         bottleneck_tensor_name = 'MobilenetV1/Predictions/Reshape:0'
         bottleneck_tensor_size = 1001
@@ -970,7 +970,7 @@ def main(_):
     # See https://github.com/tensorflow/tensorflow/issues/3047
     tf.logging.set_verbosity(tf.logging.INFO)
 
-    # Prepare necessary directories  that can be used during models.training_models
+    # Prepare necessary directories  that can be used during io.cortex.cortexapi.models.training_models
     prepare_file_system()
 
     # Gather information about the model architecture we'll be using.
@@ -994,7 +994,7 @@ def main(_):
     if class_count == 1:
         tf.logging.error('Only one valid folder of images found at ' +
                          FLAGS.image_dir +
-                         ' - multiple classes are needed for models.classification_models.')
+                         ' - multiple classes are needed for io.cortex.cortexapi.models.classification_models.')
         return -1
 
     # See if the command-line flags mean we're applying any distortions.
@@ -1025,7 +1025,7 @@ def main(_):
                               decoded_image_tensor, resized_image_tensor,
                               bottleneck_tensor, FLAGS.architecture)
 
-        # Add the new layer that we'll be models.training_models.
+        # Add the new layer that we'll be io.cortex.cortexapi.models.training_models.
         (train_step, cross_entropy, bottleneck_input, ground_truth_input,
          final_tensor) = add_final_training_ops(
             len(image_lists.keys()), FLAGS.final_tensor_name, bottleneck_tensor,
@@ -1047,32 +1047,32 @@ def main(_):
         init = tf.global_variables_initializer()
         sess.run(init)
 
-        # Run the models.training_models for as many cycles as requested on the command line.
+        # Run the io.cortex.cortexapi.models.training_models for as many cycles as requested on the command line.
         for i in range(FLAGS.how_many_training_steps):
             # Get a batch of input bottleneck values, either calculated fresh every
             # time with distortions applied, or from the cache stored on disk.
             if do_distort_images:
                 (train_bottlenecks,
                  train_ground_truth) = get_random_distorted_bottlenecks(
-                    sess, image_lists, FLAGS.train_batch_size, 'models.training_models',
+                    sess, image_lists, FLAGS.train_batch_size, 'io.cortex.cortexapi.models.training_models',
                     FLAGS.image_dir, distorted_jpeg_data_tensor,
                     distorted_image_tensor, resized_image_tensor, bottleneck_tensor)
             else:
                 (train_bottlenecks,
                  train_ground_truth, _) = get_random_cached_bottlenecks(
-                    sess, image_lists, FLAGS.train_batch_size, 'models.training_models',
+                    sess, image_lists, FLAGS.train_batch_size, 'io.cortex.cortexapi.models.training_models',
                     FLAGS.bottleneck_dir, FLAGS.image_dir, jpeg_data_tensor,
                     decoded_image_tensor, resized_image_tensor, bottleneck_tensor,
                     FLAGS.architecture)
-            # Feed the bottlenecks and ground truth into the graph, and run a models.training_models
-            # step. Capture models.training_models summaries for TensorBoard with the `merged` op.
+            # Feed the bottlenecks and ground truth into the graph, and run a io.cortex.cortexapi.models.training_models
+            # step. Capture io.cortex.cortexapi.models.training_models summaries for TensorBoard with the `merged` op.
             train_summary, _ = sess.run(
                 [merged, train_step],
                 feed_dict={bottleneck_input: train_bottlenecks,
                            ground_truth_input: train_ground_truth})
             train_writer.add_summary(train_summary, i)
 
-            # Every so often, print out how well the graph is models.training_models.
+            # Every so often, print out how well the graph is io.cortex.cortexapi.models.training_models.
             is_last_step = (i + 1 == FLAGS.how_many_training_steps)
             if (i % FLAGS.eval_step_interval) == 0 or is_last_step:
                 train_accuracy, cross_entropy_value = sess.run(
@@ -1091,7 +1091,7 @@ def main(_):
                         FLAGS.bottleneck_dir, FLAGS.image_dir, jpeg_data_tensor,
                         decoded_image_tensor, resized_image_tensor, bottleneck_tensor,
                         FLAGS.architecture))
-                # Run a validation step and capture models.training_models summaries for TensorBoard
+                # Run a validation step and capture io.cortex.cortexapi.models.training_models summaries for TensorBoard
                 # with the `merged` op.
                 validation_summary, validation_accuracy = sess.run(
                     [merged, evaluation_step],
@@ -1117,7 +1117,7 @@ def main(_):
                                 intermediate_file_name)
                 save_graph_to_file(sess, graph, intermediate_file_name)
 
-        # We've completed all our models.training_models, so run a final test evaluation on
+        # We've completed all our io.cortex.cortexapi.models.training_models, so run a final test evaluation on
         # some new images we haven't used before.
         test_bottlenecks, test_ground_truth, test_filenames = (
             get_random_cached_bottlenecks(
@@ -1194,13 +1194,13 @@ if __name__ == '__main__':
         '--how_many_training_steps',
         type=int,
         default=4000,
-        help='How many models.training_models steps to run before ending.'
+        help='How many io.cortex.cortexapi.models.training_models steps to run before ending.'
     )
     parser.add_argument(
         '--learning_rate',
         type=float,
         default=0.01,
-        help='How large a learning rate to use when models.training_models.'
+        help='How large a learning rate to use when io.cortex.cortexapi.models.training_models.'
     )
     parser.add_argument(
         '--testing_percentage',
@@ -1218,7 +1218,7 @@ if __name__ == '__main__':
         '--eval_step_interval',
         type=int,
         default=10,
-        help='How often to evaluate the models.training_models results.'
+        help='How often to evaluate the io.cortex.cortexapi.models.training_models results.'
     )
     parser.add_argument(
         '--train_batch_size',
@@ -1232,7 +1232,7 @@ if __name__ == '__main__':
         default=-1,
         help="""\
       How many images to test on. This test set is only used once, to evaluate
-      the final accuracy of the model after models.training_models completes.
+      the final accuracy of the model after io.cortex.cortexapi.models.training_models completes.
       A value of -1 causes the entire test set to be used, which leads to more
       stable results across runs.\
       """
@@ -1244,10 +1244,10 @@ if __name__ == '__main__':
         help="""\
       How many images to use in an evaluation batch. This validation set is
       used much more often than the test set, and is an early indicator of how
-      accurate the model is during models.training_models.
+      accurate the model is during io.cortex.cortexapi.models.training_models.
       A value of -1 causes the entire validation set to be used, which leads to
-      more stable results across models.training_models iterations, but may be slower on large
-      models.training_models sets.\
+      more stable results across io.cortex.cortexapi.models.training_models iterations, but may be slower on large
+      io.cortex.cortexapi.models.training_models sets.\
       """
     )
     parser.add_argument(
@@ -1286,14 +1286,14 @@ if __name__ == '__main__':
         type=str,
         default='final_result',
         help="""\
-      The name of the output models.classification_models layer in the retrained graph.\
+      The name of the output io.cortex.cortexapi.models.classification_models layer in the retrained graph.\
       """
     )
     parser.add_argument(
         '--flip_left_right',
         default=False,
         help="""\
-      Whether to randomly flip half of the models.training_models images horizontally.\
+      Whether to randomly flip half of the io.cortex.cortexapi.models.training_models images horizontally.\
       """,
         action='store_true'
     )
@@ -1303,7 +1303,7 @@ if __name__ == '__main__':
         default=0,
         help="""\
       A percentage determining how much of a margin to randomly crop off the
-      models.training_models images.\
+      io.cortex.cortexapi.models.training_models images.\
       """
     )
     parser.add_argument(
@@ -1312,7 +1312,7 @@ if __name__ == '__main__':
         default=0,
         help="""\
       A percentage determining how much to randomly scale up the size of the
-      models.training_models images by.\
+      io.cortex.cortexapi.models.training_models images by.\
       """
     )
     parser.add_argument(
@@ -1320,7 +1320,7 @@ if __name__ == '__main__':
         type=int,
         default=0,
         help="""\
-      A percentage determining how much to randomly multiply the models.training_models image
+      A percentage determining how much to randomly multiply the io.cortex.cortexapi.models.training_models image
       input pixels up or down by.\
       """
     )
@@ -1330,12 +1330,12 @@ if __name__ == '__main__':
         default='inception_v3',
         help="""\
       Which model architecture to use. 'inception_v3' is the most accurate, but
-      also the slowest. For faster or smaller models, chose a MobileNet with the
+      also the slowest. For faster or smaller io.cortex.cortexapi.models, chose a MobileNet with the
       form 'mobilenet_<parameter size>_<input_size>[_quantized]'. For example,
       'mobilenet_1.0_224' will pick a model that is 17 MB in size and takes 224
       pixel input images, while 'mobilenet_0.25_128_quantized' will choose a much
       less accurate, but smaller and faster network that's 920 KB on disk and
-      takes 128x128 images. See https://research.googleblog.com/2017/06/mobilenets-open-source-models-for.html
+      takes 128x128 images. See https://research.googleblog.com/2017/06/mobilenets-open-source-io.cortex.cortexapi.models-for.html
       for more information on Mobilenet.\
       """)
     FLAGS, unparsed = parser.parse_known_args()

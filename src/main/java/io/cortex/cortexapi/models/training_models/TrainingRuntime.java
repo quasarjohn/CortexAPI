@@ -1,4 +1,4 @@
-package models.training_models;
+package io.cortex.cortexapi.models.training_models;
 
 public class TrainingRuntime {
 

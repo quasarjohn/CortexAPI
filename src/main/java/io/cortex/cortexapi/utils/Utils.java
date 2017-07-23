@@ -1,7 +1,7 @@
-package utils;
+package io.cortex.cortexapi.utils;
 
-import models.training_models.ReturnableTrainingProcess;
-import models.training_models.TrainingProcess;
+import io.cortex.cortexapi.models.training_models.ReturnableTrainingProcess;
+import io.cortex.cortexapi.models.training_models.TrainingProcess;
 
 public class Utils {
 

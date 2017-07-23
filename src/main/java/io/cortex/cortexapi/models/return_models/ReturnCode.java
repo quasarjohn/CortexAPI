@@ -1,4 +1,4 @@
-package models.return_models;
+package io.cortex.cortexapi.models.return_models;
 
 public class ReturnCode {
     public static final String OK = "200 OK";

@@ -1,4 +1,4 @@
-package models.classification_models;
+package io.cortex.cortexapi.models.classification_models;
 
 import java.util.Comparator;
 

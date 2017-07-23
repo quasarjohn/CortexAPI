@@ -1,4 +1,4 @@
-package utils;
+package io.cortex.cortexapi.utils;
 
 /**
  * Created by John on 7/15/2017.
@@ -13,8 +13,7 @@ public class SystemPaths {
             "E:/Workspaces/CortexAPI/inception";
 
     public static final String CORTEX_USER_MODELS_PATH =
-            CORTEX_TF_FILES_PATH + "/models/%s";
-
+            CORTEX_TF_FILES_PATH + "/io/cortex/cortexapi/models/%s";
 
     public static final String TRAINING_STEPS_LOG =
             CORTEX_USER_MODELS_PATH + "/training_steps_log.txt";
