@@ -7,7 +7,6 @@ import java.util.Comparator;
  */
 public class Classification {
 
-    private String status;
     private String label;
     private float probability;
 
@@ -25,13 +24,5 @@ public class Classification {
 
     public void setProbability(float probability) {
         this.probability = probability;
-    }
-
-    public String getStatus() {
-        return status;
-    }
-
-    public void setStatus(String status) {
-        this.status = status;
     }
 }

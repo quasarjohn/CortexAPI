@@ -3,10 +3,9 @@ package models.training_models; /**
  */
 
 
-import utls.SystemPaths;
+import utils.SystemPaths;
 
 import java.io.File;
-import java.util.HashMap;
 
 
 public class TrainingService {

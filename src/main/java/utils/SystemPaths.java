@@ -1,4 +1,4 @@
-package utls;
+package utils;
 
 /**
  * Created by John on 7/15/2017.

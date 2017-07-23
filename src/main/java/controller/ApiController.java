@@ -4,24 +4,28 @@ import com.google.common.util.concurrent.*;
 import models.classification_models.Classification;
 import models.classification_models.ClassificationService;
 
+import models.classification_models.OnlineClassificationService;
+import models.return_models.ReturnCode;
+import models.return_models.ReturnContent;
+import models.return_models.ReturnObject;
+import models.training_models.ReturnableTrainingProcess;
 import models.training_models.TrainingLog;
-import org.springframework.web.bind.annotation.PathVariable;
-import org.springframework.web.bind.annotation.RequestMapping;
-import org.springframework.web.bind.annotation.RestController;
+import org.springframework.web.bind.annotation.*;
 
 import models.training_models.TrainingService;
 import models.training_models.TrainingProcess;
-import utls.ImageDirectoryUtils;
-import utls.SystemPaths;
-import utls.VerificationUtils;
+import utils.ImageDirectoryUtils;
+import utils.SystemPaths;
+import utils.Utils;
 
 import javax.annotation.Nullable;
 import java.io.File;
 import java.io.FileNotFoundException;
-import java.util.ArrayList;
+import java.io.UnsupportedEncodingException;
+import java.net.URLDecoder;
+import java.net.URLEncoder;
+import java.util.*;
 
-import java.util.HashMap;
-import java.util.Scanner;
 import java.util.concurrent.Callable;
 import java.util.concurrent.ExecutorService;
 import java.util.concurrent.Executors;
@@ -32,7 +36,7 @@ import java.util.concurrent.Executors;
 
 @RestController
 @RequestMapping("/api")
-public class MainController {
+public class ApiController {
 
     //monitor process
     //UID, Process Object
@@ -46,41 +50,38 @@ public class MainController {
     //notifies processes hashmap when a process is complete
     private static ListeningExecutorService listeningExecutorService = MoreExecutors.listeningDecorator(service);
 
-    //TODO use specific model based on model_key. Update error return messages. These are temporary
-    @RequestMapping("/{api_key}/classifier/classifications/{model_key}/{image_url}")
-    public ArrayList<Classification> classify(@PathVariable String api_key,
-                                              @PathVariable String model_key,
-                                              @PathVariable String image_url) {
-        ArrayList<Classification> classifications = new ArrayList<>();
+    @GetMapping("/{api_key}/classifier/classify_image/{model_key}")
+    public ReturnObject classify_image(@PathVariable String api_key,
+                                       @PathVariable String model_key,
+                                       @RequestParam(value = "img_url") String img_url,
+                                       @RequestParam(value = "max_results", defaultValue = "0", required = false)
+                                               Optional<Integer> max_results,
+                                       @RequestParam(value = "img_url", defaultValue = "asc", required = false)
+                                               Optional<String> order)
+            throws UnsupportedEncodingException {
 
-        if (!VerificationUtils.userExists(api_key)) {
-            Classification classification = new Classification();
-            classification.setStatus("INVALID API KEY");
-            return classifications;
-        }
-
-
-        //api key is used for verification
-        //model key is used to specify which model to use for classification
-        //image_url is the url of the image to classify
+        ReturnObject returnObject = new ReturnObject();
 
 
-        ClassificationService classifier = new ClassificationService();
-        classifications = classifier.classifyImage(image_url);
-        return classifications;
+        returnObject.setCode(ReturnCode.OK);
+        OnlineClassificationService classificationService = new OnlineClassificationService();
+        returnObject.setContent(classificationService.classifyImage(img_url, max_results.get(), order.get()));
+
+        return returnObject;
     }
 
     @RequestMapping("/{api_key}/trainer/training/{category}/{training_steps}")
-    public String training(@PathVariable String api_key,
-                           @PathVariable String category,
-                           @PathVariable int training_steps) throws NoSuchFieldException, IllegalAccessException {
+    public ReturnObject training(@PathVariable String api_key,
+                                 @PathVariable String category,
+                                 @PathVariable int training_steps) throws NoSuchFieldException, IllegalAccessException {
 
+        ReturnObject returnObject = new ReturnObject();
         //category is also the title of the classifier
         //increasing the training steps increases the accuracy of the training
 
         //user may train models only one at a time
         //start training only if user is not training currently
-        if (!VerificationUtils.userIsTraining(processes.get(api_key))) {
+        if (!Utils.userIsTraining(processes.get(api_key))) {
             //create new process
             service.execute(() -> {
                 //get list of labels
@@ -123,33 +124,36 @@ public class MainController {
                 trainingProcess.setLabels(labels);
                 trainingProcess.setStatus(TrainingProcess.TrainingStatus.TRAINING);
                 processes.put(api_key, trainingProcess);
-            });
-            return "Training Started";
-        }
 
-        return "User is already training a model";
+            });
+            returnObject.setCode(ReturnCode.OK);
+            return returnObject;
+        } else {
+            returnObject.setCode(ReturnCode.FORBIDDEN);
+            return returnObject;
+        }
     }
 
 
     //checks the status of the training
     @RequestMapping("/{key}/trainer/info")
-    public TrainingProcess info(@PathVariable String key) {
+    public ReturnObject info(@PathVariable String key) {
+        ReturnObject returnObject = new ReturnObject();
         TrainingProcess process = processes.get(key);
 
-        TrainingProcess process_clone = null;
+        ReturnableTrainingProcess process_clone = null;
 
         if (process == null) {
-            process_clone = new TrainingProcess();
-            process_clone.setStatus(TrainingProcess.TrainingStatus.NULL);
+            returnObject.setCode(ReturnCode.NOT_FOUND);
+            return returnObject;
         } else {
-            process_clone = new TrainingProcess();
-            process_clone.setStatus(process.getStatus());
-            process_clone.setLabels(process.getLabels());
-            process_clone.setModel_name(process.getModel_name());
-            process_clone.setRuntime(process.getRuntime());
-            process_clone.setRuntime(process.getProcess().info().totalCpuDuration().get().toSeconds() + "");
+            process_clone = Utils.mapTrainingProcess(process);
         }
-        return process_clone;
+
+        returnObject.setCode(ReturnCode.OK);
+        returnObject.setContent(process_clone);
+
+        return returnObject;
     }
 
     @RequestMapping("/{key}/trainer/logs")
@@ -185,16 +189,25 @@ public class MainController {
 
     //stops current training
     @RequestMapping("/{key}/trainer/stop")
-    public String stop(@PathVariable String key) {
+    public ReturnObject stop(@PathVariable String key) {
+        ReturnObject returnObject = new ReturnObject();
 
         TrainingProcess trainingProcess = processes.get(key);
 
-        if (trainingProcess == null || trainingProcess.getProcess() == null)
-            return "User is not models.training_models a model";
-        else
+        if (trainingProcess == null || trainingProcess.getProcess() == null) {
+            //user is not training a model. no existing process found
+            returnObject.setCode(ReturnCode.NOT_FOUND);
+            return returnObject;
+        } else {
             trainingProcess.getProcess().destroy();
-        return "Training stopped";
+            returnObject.setCode(ReturnCode.OK);
+            return returnObject;
+        }
     }
 
+    @RequestMapping("/test/{name}")
+    public String test(@PathVariable String name, @RequestParam(value = "path", defaultValue = "") String path) {
+        return name + " : " + path;
 
+    }
 }
