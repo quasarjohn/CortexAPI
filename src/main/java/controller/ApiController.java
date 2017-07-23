@@ -54,9 +54,9 @@ public class ApiController {
     public ReturnObject classify_image(@PathVariable String api_key,
                                        @PathVariable String model_key,
                                        @RequestParam(value = "img_url") String img_url,
-                                       @RequestParam(value = "max_results", defaultValue = "0", required = false)
+                                       @RequestParam(value = "max_results", defaultValue = "3", required = false)
                                                Optional<Integer> max_results,
-                                       @RequestParam(value = "img_url", defaultValue = "asc", required = false)
+                                       @RequestParam(value = "order", defaultValue = "probability_desc", required = false)
                                                Optional<String> order)
             throws UnsupportedEncodingException {
 

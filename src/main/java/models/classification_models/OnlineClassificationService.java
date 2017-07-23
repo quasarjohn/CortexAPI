@@ -23,9 +23,9 @@ import java.util.List;
  */
 public class OnlineClassificationService {
 
-    public ArrayList<Classification> classifyImage(String img_url, int max_results, String order)
+    public List<Classification> classifyImage(String img_url, int max_results, String order)
             throws UnsupportedEncodingException {
-        ArrayList<Classification> classifications = new ArrayList<>();
+        List<Classification> classifications = new ArrayList<>();
 
         String modelDir = "Z://tf_files/";
 
@@ -47,16 +47,32 @@ public class OnlineClassificationService {
             classification.setProbability(labelProbabilities[bestLabelIdx]);
             classifications.add(classification);
 
+
             //this is to avoid out of bounds exception if the user sets a higher value than the size of the labels
-            if (max_results > labels.size())
+            if (max_results > labels.size() || max_results == 0)
                 max_results = labels.size();
 
-            for (int i = 0; i < max_results; i++) {
+            Classification[] classificationArray = new Classification[max_results];
+            for (int i = 0; i < classificationArray.length; i++) {
                 Classification c = new Classification();
                 c.setLabel(labels.get(i));
                 c.setProbability(labelProbabilities[i]);
-                classifications.add(c);
+                classificationArray[i] = c;
             }
+
+            //sort the classifications
+            if (order.equals("label_asc"))
+                Arrays.sort(classificationArray, Classification.ClassificationLabelComparatorAsc);
+            else if (order.equals("label_desc"))
+                Arrays.sort(classificationArray, Classification.ClassificationLabelComparatorDesc);
+            else if (order.equals("probability_asc"))
+                Arrays.sort(classificationArray, Classification.ClassificationLabelComparatorAsc);
+            else
+                //if user enters anything, it will return the results in descending order based on the probability
+                Arrays.sort(classificationArray, Classification.ClassificationLabelComparatorDesc);
+
+            //convert to list that can be returned as json
+            classifications = Arrays.asList(classificationArray);
         }
         return classifications;
     }
