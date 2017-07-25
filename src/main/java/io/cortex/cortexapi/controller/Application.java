@@ -1,7 +1,12 @@
 package io.cortex.cortexapi.controller;
 
+import org.apache.coyote.http11.AbstractHttp11Protocol;
 import org.springframework.boot.SpringApplication;
 import org.springframework.boot.autoconfigure.SpringBootApplication;
+import org.springframework.boot.context.embedded.ConfigurableEmbeddedServletContainer;
+import org.springframework.boot.context.embedded.EmbeddedServletContainerCustomizer;
+import org.springframework.boot.context.embedded.tomcat.TomcatConnectorCustomizer;
+import org.springframework.boot.context.embedded.tomcat.TomcatEmbeddedServletContainerFactory;
 import org.springframework.context.annotation.Bean;
 import org.springframework.scheduling.annotation.EnableAsync;
 import org.springframework.scheduling.concurrent.ThreadPoolTaskExecutor;
@@ -29,6 +34,39 @@ public class Application {
         executor.setThreadNamePrefix("asyncExecutor");
         executor.initialize();
         return executor;
+    }
+
+    //Tomcat large file upload connection reset
+    //http://www.mkyong.com/spring/spring-file-upload-and-connection-reset-issue/
+    @Bean
+    public TomcatEmbeddedServletContainerFactory tomcatEmbedded() {
+
+        TomcatEmbeddedServletContainerFactory tomcat = new TomcatEmbeddedServletContainerFactory();
+
+        tomcat.addConnectorCustomizers((TomcatConnectorCustomizer) connector -> {
+            if ((connector.getProtocolHandler() instanceof AbstractHttp11Protocol<?>)) {
+                //-1 means unlimited
+                ((AbstractHttp11Protocol<?>) connector.getProtocolHandler()).setMaxSwallowSize(-1);
+            }
+        });
+
+        return tomcat;
+
+    }
+
+    // Set maxPostSize of embedded tomcat server to 10 megabytes (default is 2 MB, not large enough to support file uploads > 1.5 MB)
+    @Bean
+    EmbeddedServletContainerCustomizer containerCustomizer() throws Exception {
+        return (ConfigurableEmbeddedServletContainer container) -> {
+            if (container instanceof TomcatEmbeddedServletContainerFactory) {
+                TomcatEmbeddedServletContainerFactory tomcat = (TomcatEmbeddedServletContainerFactory) container;
+                tomcat.addConnectorCustomizers(
+                        (connector) -> {
+                            connector.setMaxPostSize(100000000); // 10 MB
+                        }
+                );
+            }
+        };
     }
 
 }

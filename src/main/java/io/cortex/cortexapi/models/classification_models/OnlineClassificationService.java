@@ -39,17 +39,11 @@ public class OnlineClassificationService {
                             "BEST MATCH: %s (%.2f%% likely)",
                             labels.get(bestLabelIdx), labelProbabilities[bestLabelIdx] * 100f));
 
-            Classification classification = new Classification();
-            classification.setLabel(labels.get(bestLabelIdx));
-            classification.setProbability(labelProbabilities[bestLabelIdx]);
-            classifications.add(classification);
-
-
             //this is to avoid out of bounds exception if the user sets a higher value than the size of the labels
             if (max_results > labels.size() || max_results == 0)
                 max_results = labels.size();
 
-            Classification[] classificationArray = new Classification[max_results];
+            Classification[] classificationArray = new Classification[labels.size()];
             for (int i = 0; i < classificationArray.length; i++) {
                 Classification c = new Classification();
                 c.setLabel(labels.get(i));
@@ -63,16 +57,69 @@ public class OnlineClassificationService {
             else if (order.equals("label_desc"))
                 Arrays.sort(classificationArray, Classification.ClassificationLabelComparatorDesc);
             else if (order.equals("probability_asc"))
-                Arrays.sort(classificationArray, Classification.ClassificationLabelComparatorAsc);
+                Arrays.sort(classificationArray, Classification.ProbabilityComparatorAsc);
             else
                 //if user enters anything, it will return the results in descending order based on the probability
-                Arrays.sort(classificationArray, Classification.ClassificationLabelComparatorDesc);
+                //this is also the default value
+                Arrays.sort(classificationArray, Classification.ProbabilityComparatorDesc);
 
-            //convert to list that can be returned as json
-            classifications = Arrays.asList(classificationArray);
+            for(int i = 0; i<max_results;i++) {
+                classifications.add(classificationArray[i]);
+            }
         }
         return classifications;
     }
+
+
+    public List<Classification> classifyImage(byte[] imageBytes, int max_results, String order)
+            throws UnsupportedEncodingException {
+        List<Classification> classifications = new ArrayList<>();
+
+        String modelDir = "Z://tf_files/";
+
+        byte[] graphDef = readAllBytesOrExit(Paths.get(modelDir, "retrained_graph.pb"));
+        List<String> labels =
+                readAllLinesOrExit(Paths.get(modelDir, "retrained_labels.txt"));
+
+        try (Tensor image = constructAndExecuteGraphToNormalizeImage(imageBytes)) {
+            float[] labelProbabilities = executeInceptionGraph(graphDef, image);
+            int bestLabelIdx = maxIndex(labelProbabilities);
+            System.out.println(
+                    String.format(
+                            "BEST MATCH: %s (%.2f%% likely)",
+                            labels.get(bestLabelIdx), labelProbabilities[bestLabelIdx] * 100f));
+
+            //this is to avoid out of bounds exception if the user sets a higher value than the size of the labels
+            if (max_results > labels.size() || max_results == 0)
+                max_results = labels.size();
+
+            Classification[] classificationArray = new Classification[labels.size()];
+            for (int i = 0; i < classificationArray.length; i++) {
+                Classification c = new Classification();
+                c.setLabel(labels.get(i));
+                c.setProbability(labelProbabilities[i]);
+                classificationArray[i] = c;
+            }
+
+            //sort the classifications
+            if (order.equals("label_asc"))
+                Arrays.sort(classificationArray, Classification.ClassificationLabelComparatorAsc);
+            else if (order.equals("label_desc"))
+                Arrays.sort(classificationArray, Classification.ClassificationLabelComparatorDesc);
+            else if (order.equals("probability_asc"))
+                Arrays.sort(classificationArray, Classification.ProbabilityComparatorAsc);
+            else
+                //if user enters anything, it will return the results in descending order based on the probability
+                //this is also the default value
+                Arrays.sort(classificationArray, Classification.ProbabilityComparatorDesc);
+
+            for(int i = 0; i<max_results;i++) {
+                classifications.add(classificationArray[i]);
+            }
+        }
+        return classifications;
+    }
+
 
     private byte[] URL_to_byte(String path) {
         byte[] imageInByte = null;
