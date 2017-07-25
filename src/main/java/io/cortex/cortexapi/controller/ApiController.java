@@ -45,7 +45,7 @@ public class ApiController {
     //notifies processes hashmap when a process is complete
     private static ListeningExecutorService listeningExecutorService = MoreExecutors.listeningDecorator(service);
 
-    @CrossOrigin(origins = "http://192.168.0.149:8090")
+//    @CrossOrigin(origins = "http://192.168.0.149:8090")
     @GetMapping("/{api_key}/classifier/classify_image/{model_key}")
     public ReturnObject classify_image(@PathVariable String api_key,
                                        @PathVariable String model_key,
@@ -70,6 +70,7 @@ public class ApiController {
     public ReturnObject training(@PathVariable String api_key,
                                  @PathVariable String category,
                                  @PathVariable int training_steps) throws NoSuchFieldException, IllegalAccessException {
+        System.out.println("NEW TRAINING STARTED");
 
         ReturnObject returnObject = new ReturnObject();
         //category is also the title of the classifier

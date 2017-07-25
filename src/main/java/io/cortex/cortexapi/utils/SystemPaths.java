@@ -11,10 +11,10 @@ public class SystemPaths {
             CORTEX_TF_FILES_PATH + "/temp";
 
     public static final String INCEPTION_PATH =
-            "E:/Workspaces/CortexAPI/inception";
+            "E:/CORTEX_DATA/inception";
 
     public static final String CORTEX_USER_MODELS_PATH =
-            CORTEX_TF_FILES_PATH + "/io/cortex/cortexapi/models/%s";
+            CORTEX_TF_FILES_PATH + "/models/%s";
 
     public static final String TRAINING_STEPS_LOG =
             CORTEX_USER_MODELS_PATH + "/training_steps_log.txt";
