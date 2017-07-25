@@ -54,22 +54,6 @@ public class ClassificationService {
         return classifications;
     }
 
-    private static void printUsage(PrintStream s) {
-        final String url =
-                "https://storage.googleapis.com/download.tensorflow.org/io.cortex.cortexapi.models/inception5h.zip";
-        s.println(
-                "Java program that uses a pre-trained Inception model (http://arxiv.org/abs/1512.00567)");
-        s.println("to label JPEG images.");
-        s.println("TensorFlow version: " + TensorFlow.version());
-        s.println();
-        s.println("Usage: label_image <model dir> <image file>");
-        s.println();
-        s.println("Where:");
-        s.println("<model dir> is a directory containing the unzipped contents of the inception model");
-        s.println("            (from " + url + ")");
-        s.println("<image file> is the path to a JPEG image file");
-    }
-
     private static Tensor constructAndExecuteGraphToNormalizeImage(byte[] imageBytes) {
         try (Graph g = new Graph()) {
             GraphBuilder b = new GraphBuilder(g);

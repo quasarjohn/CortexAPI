@@ -45,6 +45,7 @@ public class ApiController {
     //notifies processes hashmap when a process is complete
     private static ListeningExecutorService listeningExecutorService = MoreExecutors.listeningDecorator(service);
 
+    @CrossOrigin(origins = "http://192.168.0.149:8090")
     @GetMapping("/{api_key}/classifier/classify_image/{model_key}")
     public ReturnObject classify_image(@PathVariable String api_key,
                                        @PathVariable String model_key,

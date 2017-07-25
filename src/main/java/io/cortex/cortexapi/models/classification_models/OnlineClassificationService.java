@@ -1,5 +1,6 @@
 package io.cortex.cortexapi.models.classification_models;
 
+import io.cortex.cortexapi.utils.SystemPaths;
 import org.tensorflow.*;
 
 import javax.imageio.ImageIO;
@@ -24,7 +25,8 @@ public class OnlineClassificationService {
             throws UnsupportedEncodingException {
         List<Classification> classifications = new ArrayList<>();
 
-        String modelDir = "Z://tf_files/";
+        //TODO this is a temporary location. The model dir should be automatically identified based on the model key
+        String modelDir = SystemPaths.MODEL_DIR;
 
         byte[] graphDef = readAllBytesOrExit(Paths.get(modelDir, "retrained_graph.pb"));
         List<String> labels =
@@ -39,17 +41,11 @@ public class OnlineClassificationService {
                             "BEST MATCH: %s (%.2f%% likely)",
                             labels.get(bestLabelIdx), labelProbabilities[bestLabelIdx] * 100f));
 
-            Classification classification = new Classification();
-            classification.setLabel(labels.get(bestLabelIdx));
-            classification.setProbability(labelProbabilities[bestLabelIdx]);
-            classifications.add(classification);
-
-
             //this is to avoid out of bounds exception if the user sets a higher value than the size of the labels
             if (max_results > labels.size() || max_results == 0)
                 max_results = labels.size();
 
-            Classification[] classificationArray = new Classification[max_results];
+            Classification[] classificationArray = new Classification[labels.size()];
             for (int i = 0; i < classificationArray.length; i++) {
                 Classification c = new Classification();
                 c.setLabel(labels.get(i));
@@ -63,13 +59,15 @@ public class OnlineClassificationService {
             else if (order.equals("label_desc"))
                 Arrays.sort(classificationArray, Classification.ClassificationLabelComparatorDesc);
             else if (order.equals("probability_asc"))
-                Arrays.sort(classificationArray, Classification.ClassificationLabelComparatorAsc);
+                Arrays.sort(classificationArray, Classification.ProbabilityComparatorAsc);
             else
                 //if user enters anything, it will return the results in descending order based on the probability
-                Arrays.sort(classificationArray, Classification.ClassificationLabelComparatorDesc);
+                //this is also the default value
+                Arrays.sort(classificationArray, Classification.ProbabilityComparatorDesc);
 
-            //convert to list that can be returned as json
-            classifications = Arrays.asList(classificationArray);
+            for (int i = 0; i < max_results; i++) {
+                classifications.add(classificationArray[i]);
+            }
         }
         return classifications;
     }
@@ -87,22 +85,6 @@ public class OnlineClassificationService {
             e.printStackTrace();
         }
         return imageInByte;
-    }
-
-    private static void printUsage(PrintStream s) {
-        final String url =
-                "https://storage.googleapis.com/download.tensorflow.org/io.cortex.cortexapi.models/inception5h.zip";
-        s.println(
-                "Java program that uses a pre-trained Inception model (http://arxiv.org/abs/1512.00567)");
-        s.println("to label JPEG images.");
-        s.println("TensorFlow version: " + TensorFlow.version());
-        s.println();
-        s.println("Usage: label_image <model dir> <image file>");
-        s.println();
-        s.println("Where:");
-        s.println("<model dir> is a directory containing the unzipped contents of the inception model");
-        s.println("            (from " + url + ")");
-        s.println("<image file> is the path to a JPEG image file");
     }
 
     private static Tensor constructAndExecuteGraphToNormalizeImage(byte[] imageBytes) {
