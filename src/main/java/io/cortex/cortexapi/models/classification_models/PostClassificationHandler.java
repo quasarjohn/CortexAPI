@@ -27,6 +27,7 @@ normally, an image from a url will be classified from a url. But when an image i
 for classification, this class takes care of that
  */
 @RestController
+@CrossOrigin(origins = "http://192.168.0.149:8090")
 @RequestMapping("/api/upload")
 public class PostClassificationHandler {
 
@@ -52,41 +53,50 @@ public class PostClassificationHandler {
             return new ResponseEntity("please select a file!", HttpStatus.OK);
         }
 
-        try {
+        List<MultipartFile> files = Arrays.asList(uploadfiles);
 
-            saveUploadedFiles(Arrays.asList(uploadfiles));
-
-        } catch (IOException e) {
-            return new ResponseEntity<>(HttpStatus.BAD_REQUEST);
+        for(MultipartFile file : files) {
+            System.out.println(file.getName() +  " " + file.getContentType());
         }
 
-        ReturnObject returnObject = new ReturnObject();
-        returnObject.setCode("OKAY");
+//        OnlineClassificationService service = new OnlineClassificationService();
+//        List<Classification> classifications = service.classifyImage()
+//
+//        ReturnObject returnObject = new ReturnObject();
+//        returnObject.setCode("OKAY");
+//
+//        Classification classification = new Classification();
+//        classification.setLabel("A");
+//        classification.setProbability(50);
+//
+//        returnObject.setContent(classification);
 
-        Classification classification = new Classification();
-        classification.setLabel("A");
-        classification.setProbability(50);
+//        try {
+//
+//            saveUploadedFiles(Arrays.asList(uploadfiles));
+//
+//        } catch (IOException e) {
+//            return new ResponseEntity<>(HttpStatus.BAD_REQUEST);
+//        }
 
-        returnObject.setContent(classification);
-
-        return new ResponseEntity(returnObject, HttpStatus.OK);
+        return new ResponseEntity("SUCESS", HttpStatus.OK);
     }
 
-    @PostMapping("/multi/model")
-    @CrossOrigin(origins = "http://192.168.0.149:8090")
-    public ResponseEntity<?> multiUploadFileModel(@ModelAttribute UploadModel model) {
-
-        try {
-
-            saveUploadedFiles(Arrays.asList(model.getFiles()));
-
-        } catch (IOException e) {
-            return new ResponseEntity<>(HttpStatus.BAD_REQUEST);
-        }
-
-        return new ResponseEntity("Successfully uploaded!", HttpStatus.OK);
-
-    }
+//    @PostMapping("/multi/model")
+//    @CrossOrigin(origins = "http://192.168.0.149:8090")
+//    public ResponseEntity<?> multiUploadFileModel(@ModelAttribute UploadModel model) {
+//
+//        try {
+//
+//            saveUploadedFiles(Arrays.asList(model.getFiles()));
+//
+//        } catch (IOException e) {
+//            return new ResponseEntity<>(HttpStatus.BAD_REQUEST);
+//        }
+//
+//        return new ResponseEntity("Successfully uploaded!", HttpStatus.OK);
+//
+//    }
 
     //save file
     private void saveUploadedFiles(List<MultipartFile> files) throws IOException {

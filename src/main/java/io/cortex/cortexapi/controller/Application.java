@@ -36,8 +36,6 @@ public class Application {
         return executor;
     }
 
-    //Tomcat large file upload connection reset
-    //http://www.mkyong.com/spring/spring-file-upload-and-connection-reset-issue/
     @Bean
     public TomcatEmbeddedServletContainerFactory tomcatEmbedded() {
 
@@ -51,10 +49,9 @@ public class Application {
         });
 
         return tomcat;
-
     }
 
-    // Set maxPostSize of embedded tomcat server to 10 megabytes (default is 2 MB, not large enough to support file uploads > 1.5 MB)
+    // Set maxPostSize of embedded tomcat server to 100 megabytes
     @Bean
     EmbeddedServletContainerCustomizer containerCustomizer() throws Exception {
         return (ConfigurableEmbeddedServletContainer container) -> {
