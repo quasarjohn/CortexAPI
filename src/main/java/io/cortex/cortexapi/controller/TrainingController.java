@@ -1,12 +1,18 @@
 package io.cortex.cortexapi.controller;
 
+import com.fasterxml.jackson.core.JsonProcessingException;
 import com.google.common.util.concurrent.*;
 
+import io.cortex.cortexapi.models.classification_models.Classification;
 import io.cortex.cortexapi.models.classification_models.OnlineClassificationService;
 import io.cortex.cortexapi.models.return_models.ReturnCode;
 import io.cortex.cortexapi.models.return_models.ReturnObject;
 import io.cortex.cortexapi.models.training_models.ReturnableTrainingProcess;
 import io.cortex.cortexapi.models.training_models.TrainingLog;
+import io.cortex.cortexapi.utils.UnzipUtility;
+import org.springframework.http.HttpStatus;
+import org.springframework.http.ResponseEntity;
+import org.springframework.util.StringUtils;
 import org.springframework.web.bind.annotation.*;
 
 import io.cortex.cortexapi.models.training_models.TrainingService;
@@ -14,16 +20,19 @@ import io.cortex.cortexapi.models.training_models.TrainingProcess;
 import io.cortex.cortexapi.utils.ImageDirectoryUtils;
 import io.cortex.cortexapi.utils.SystemPaths;
 import io.cortex.cortexapi.utils.Utils;
+import org.springframework.web.multipart.MultipartFile;
 
 import javax.annotation.Nullable;
-import java.io.File;
-import java.io.FileNotFoundException;
-import java.io.UnsupportedEncodingException;
+import java.io.*;
+import java.nio.file.Files;
+import java.nio.file.Path;
+import java.nio.file.Paths;
 import java.util.*;
 
 import java.util.concurrent.Callable;
 import java.util.concurrent.ExecutorService;
 import java.util.concurrent.Executors;
+import java.util.stream.Collectors;
 
 /**
  * Created by John on 7/15/2017.
@@ -31,8 +40,9 @@ import java.util.concurrent.Executors;
 
 @RestController
 @RequestMapping("/api")
-public class ApiController {
+public class TrainingController {
 
+    private static UnzipUtility unzipUtility = new UnzipUtility();
     //monitor process
     //UID, Process Object
     private static HashMap<String, TrainingProcess> processes = new HashMap();
@@ -45,38 +55,16 @@ public class ApiController {
     //notifies processes hashmap when a process is complete
     private static ListeningExecutorService listeningExecutorService = MoreExecutors.listeningDecorator(service);
 
-//    @CrossOrigin(origins = "http://192.168.0.149:8090")
-    @GetMapping("/{api_key}/classifier/classify_image/{model_key}")
-    public ReturnObject classify_image(@PathVariable String api_key,
-                                       @PathVariable String model_key,
-                                       @RequestParam(value = "img_url") String img_url,
-                                       @RequestParam(value = "max_results", defaultValue = "3", required = false)
-                                               Optional<Integer> max_results,
-                                       @RequestParam(value = "order", defaultValue = "probability_desc", required = false)
-                                               Optional<String> order)
-            throws UnsupportedEncodingException {
-
-        ReturnObject returnObject = new ReturnObject();
-
-
-        returnObject.setCode(ReturnCode.OK);
-        OnlineClassificationService classificationService = new OnlineClassificationService();
-        returnObject.setContent(classificationService.classifyImage(img_url, max_results.get(), order.get()));
-
-        return returnObject;
-    }
-
-    @RequestMapping("/{api_key}/trainer/training/{category}/{training_steps}")
+    @RequestMapping("/{api_key}/trainer/train_model/{category}/{training_steps}")
     public ReturnObject training(@PathVariable String api_key,
                                  @PathVariable String category,
                                  @PathVariable int training_steps) throws NoSuchFieldException, IllegalAccessException {
-        System.out.println("NEW TRAINING STARTED");
 
         ReturnObject returnObject = new ReturnObject();
         //category is also the title of the classifier
         //increasing the training steps increases the accuracy of the training
 
-        //user may train io.cortex.cortexapi.models only one at a time
+        //user may train only one at a time
         //start training only if user is not training currently
         if (!Utils.userIsTraining(processes.get(api_key))) {
             //create new process
@@ -131,14 +119,13 @@ public class ApiController {
         }
     }
 
-
     //checks the status of the training
     @RequestMapping("/{key}/trainer/info")
     public ReturnObject info(@PathVariable String key) {
         ReturnObject returnObject = new ReturnObject();
         TrainingProcess process = processes.get(key);
 
-        ReturnableTrainingProcess process_clone = null;
+        ReturnableTrainingProcess process_clone;
 
         if (process == null) {
             returnObject.setCode(ReturnCode.NOT_FOUND);
@@ -155,10 +142,7 @@ public class ApiController {
 
     @RequestMapping("/{key}/trainer/logs")
     public ArrayList<TrainingLog> logs(@PathVariable String key) {
-        String logs = "";
         ArrayList<TrainingLog> trainingLogs = new ArrayList<>();
-
-        System.out.println(processes.size());
 
         TrainingProcess process = processes.get(key);
         if (process == null) {
@@ -205,6 +189,57 @@ public class ApiController {
     @RequestMapping("/test/{name}")
     public String test(@PathVariable String name, @RequestParam(value = "path", defaultValue = "") String path) {
         return name + " : " + path;
+    }
 
+
+    private static String UPLOADED_FOLDER = SystemPaths.CORTEX_TRAINING_TEMP;
+
+    @PostMapping("/{api_key}/trainer/upload_train_model/{category}/{training_steps}")
+    @CrossOrigin(origins = "http://192.168.0.149:8090")
+    public ResponseEntity<?> upload_train_model(@PathVariable String api_key,
+                                                @PathVariable String category,
+                                                @PathVariable int training_steps,
+                                                @RequestParam("files") MultipartFile[] uploadFiles) throws IOException {
+        /*
+        Steps in training model
+        1. upload file
+        2. unzip file
+        3. start training
+         */
+        ReturnObject returnObject = new ReturnObject();
+        //default is bad request. It shall change depending on the result of the training
+        returnObject.setCode(ReturnCode.BAD_REQUEST);
+        String file_path = String.format(UPLOADED_FOLDER, api_key) + "/" + category + ".zip";
+
+        uploadFile(Arrays.asList(uploadFiles), returnObject, file_path);
+        unzipUtility.unzip(file_path, String.format(UPLOADED_FOLDER, api_key));
+
+        return new ResponseEntity<Object>(returnObject, HttpStatus.OK);
+    }
+
+    private void uploadFile(List<MultipartFile> files, ReturnObject returnObject, String file_path) throws IOException {
+        for (MultipartFile file : files) {
+
+            System.out.println(file.getOriginalFilename());
+
+
+            InputStream inputStream = file.getInputStream();
+            OutputStream outputStream = new FileOutputStream(new File(file_path));
+
+            byte[] buffer = new byte[1024];
+            int readbytes;
+            double transfer = 0.0;
+            double size = file.getSize();
+
+            while ((readbytes = inputStream.read(buffer, 0, 1024)) != -1) {
+                outputStream.write(buffer, 0, readbytes);
+                transfer += readbytes;
+                System.out.println(transfer / size);
+            }
+            inputStream.close();
+            outputStream.close();
+
+            returnObject.setCode(ReturnCode.OK);
+        }
     }
 }
