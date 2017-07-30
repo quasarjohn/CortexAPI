@@ -1,38 +1,28 @@
 package io.cortex.cortexapi.controller;
 
-import com.fasterxml.jackson.core.JsonProcessingException;
 import com.google.common.util.concurrent.*;
 
-import io.cortex.cortexapi.models.classification_models.Classification;
-import io.cortex.cortexapi.models.classification_models.OnlineClassificationService;
 import io.cortex.cortexapi.models.return_models.ReturnCode;
 import io.cortex.cortexapi.models.return_models.ReturnObject;
-import io.cortex.cortexapi.models.training_models.ReturnableTrainingProcess;
-import io.cortex.cortexapi.models.training_models.TrainingLog;
+import io.cortex.cortexapi.models.training_models.*;
 import io.cortex.cortexapi.utils.UnzipUtility;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
-import org.springframework.util.StringUtils;
 import org.springframework.web.bind.annotation.*;
 
-import io.cortex.cortexapi.models.training_models.TrainingService;
-import io.cortex.cortexapi.models.training_models.TrainingProcess;
-import io.cortex.cortexapi.utils.ImageDirectoryUtils;
+import io.cortex.cortexapi.utils.FileUtils;
 import io.cortex.cortexapi.utils.SystemPaths;
 import io.cortex.cortexapi.utils.Utils;
 import org.springframework.web.multipart.MultipartFile;
 
 import javax.annotation.Nullable;
 import java.io.*;
-import java.nio.file.Files;
-import java.nio.file.Path;
-import java.nio.file.Paths;
+import java.text.DecimalFormat;
 import java.util.*;
 
 import java.util.concurrent.Callable;
 import java.util.concurrent.ExecutorService;
 import java.util.concurrent.Executors;
-import java.util.stream.Collectors;
 
 /**
  * Created by John on 7/15/2017.
@@ -97,7 +87,7 @@ public class TrainingController {
                 });
 
                 //get the list of labels for the category
-                ArrayList<String> labels = ImageDirectoryUtils.getLabelsList(
+                ArrayList<String> labels = FileUtils.getLabelsList(
                         String.format(SystemPaths.CORTEX_TRAINING_TEMP, api_key)
                                 + "/" + category);
 
@@ -141,6 +131,7 @@ public class TrainingController {
     }
 
     @RequestMapping("/{key}/trainer/logs")
+    @CrossOrigin(origins = "http://192.168.0.149:8090")
     public ArrayList<TrainingLog> logs(@PathVariable String key) {
         ArrayList<TrainingLog> trainingLogs = new ArrayList<>();
 
@@ -152,7 +143,8 @@ public class TrainingController {
             return trainingLogs;
         } else {
             try {
-                String path = String.format(SystemPaths.TRAINING_STEPS_LOG, key, process.getModel_name());
+                String path = String.format(SystemPaths.TRAINING_STEPS_LOG, key, process.getModel_name()) +
+                        "training_steps_log";
                 Scanner scanner = new Scanner(new File(path));
 
                 while (scanner.hasNextLine()) {
@@ -166,6 +158,33 @@ public class TrainingController {
             }
         }
         return trainingLogs;
+    }
+
+    @RequestMapping("/{key}/trainer/status")
+    @CrossOrigin(origins = "http://192.168.0.149:8090")
+    public ReturnObject status(@PathVariable String key) {
+        TrainingProcess process = processes.get(key);
+
+        ReturnObject returnObject = new ReturnObject();
+
+        if (process == null) {
+            returnObject.setCode(ReturnCode.NOT_FOUND);
+            return returnObject;
+        } else {
+            String path = String.format(SystemPaths.TRAINING_STEPS_LOG, key, process.getModel_name());
+
+            double current_step = FileUtils.readDouble(path + "counter_log");
+            String current_log = FileUtils.readString(path + "single_log");
+
+            double percentage = 100 * (current_step / (process.getFile_count() + process.getSteps()));
+            returnObject.setCode(ReturnCode.OK);
+
+            ReturnableStatus status = new ReturnableStatus();
+            status.setPercentage(new DecimalFormat("0.00").format(percentage));
+            status.setLog(current_log);
+            returnObject.setContent(status);
+        }
+        return returnObject;
     }
 
     //stops current training
@@ -211,10 +230,63 @@ public class TrainingController {
         returnObject.setCode(ReturnCode.BAD_REQUEST);
         String file_path = String.format(UPLOADED_FOLDER, api_key) + "/" + category + ".zip";
 
+        //upload file
         uploadFile(Arrays.asList(uploadFiles), returnObject, file_path);
+        //unzip file
         unzipUtility.unzip(file_path, String.format(UPLOADED_FOLDER, api_key));
 
-        return new ResponseEntity<Object>(returnObject, HttpStatus.OK);
+        if (!Utils.userIsTraining(processes.get(api_key))) {
+            //create new process
+            service.execute(() -> {
+                //get list of labels
+                TrainingService trainingService = new TrainingService();
+                //pass reference to processes hashmap for completion notification
+                Process process = trainingService.startTraining(api_key, category, training_steps);
+                //submit process in the listening executor service for update when process is completed
+                ListenableFuture<Process> listenableProcess = listeningExecutorService.submit(() -> {
+                    //wait for completion of training process then update processes hashmap
+                    process.waitFor();
+                    processes.get(api_key).setStatus(TrainingProcess.TrainingStatus.TRAINING_COMPLETE);
+                    return null;
+                });
+
+                Futures.addCallback(listenableProcess, new FutureCallback<Process>() {
+                    @Override
+                    public void onSuccess(@Nullable Process process) {
+                        System.out.println("TRAINING SUCCESS");
+                    }
+
+                    @Override
+                    public void onFailure(Throwable throwable) {
+                        System.out.println("TRAINING FAILED");
+                    }
+                });
+
+                //get the list of labels for the category
+                ArrayList<String> labels = FileUtils.getLabelsList(
+                        String.format(SystemPaths.CORTEX_TRAINING_TEMP, api_key)
+                                + "/" + category);
+                int file_count = FileUtils.countImage(String.format(SystemPaths.CORTEX_TRAINING_TEMP, api_key)
+                        + "/" + category);
+
+                //add process to monitored trainings so user can stop them later
+                TrainingProcess trainingProcess = new TrainingProcess();
+                trainingProcess.setProcess(process);
+                trainingProcess.setModel_name(category);
+                trainingProcess.setModel_name(category);
+                trainingProcess.setLabels(labels);
+                trainingProcess.setSteps(training_steps);
+                trainingProcess.setFile_count(file_count);
+                trainingProcess.setStatus(TrainingProcess.TrainingStatus.TRAINING);
+                processes.put(api_key, trainingProcess);
+
+            });
+            returnObject.setCode(ReturnCode.OK);
+            return new ResponseEntity<Object>(returnObject, HttpStatus.OK);
+        } else {
+            returnObject.setCode(ReturnCode.FORBIDDEN);
+            return new ResponseEntity<Object>(returnObject, HttpStatus.OK);
+        }
     }
 
     private void uploadFile(List<MultipartFile> files, ReturnObject returnObject, String file_path) throws IOException {

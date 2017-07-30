@@ -31,6 +31,8 @@ public class Utils {
         returnableTrainingProcess.setModel_name(trainingProcess.getModel_name());
         returnableTrainingProcess.setRuntime(trainingProcess.getProcess().info().totalCpuDuration().get().toSeconds() + "");
         returnableTrainingProcess.setStatus(trainingProcess.getStatus());
+        returnableTrainingProcess.setFile_count(trainingProcess.getFile_count());
+        returnableTrainingProcess.setSteps(trainingProcess.getSteps());
 
         return returnableTrainingProcess;
     }

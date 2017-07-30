@@ -7,6 +7,8 @@ public class ReturnableTrainingProcess {
     private TrainingProcess.TrainingStatus status = TrainingProcess.TrainingStatus.TRAINING;
     private String runtime;
     private ArrayList<String> labels;
+    private int file_count;
+    private int steps;
 
     public String getModel_name() {
         return model_name;
@@ -43,5 +45,21 @@ public class ReturnableTrainingProcess {
 
     public enum TrainingStatus {
         TRAINING, TRAINING_STOPPED, TRAINING_COMPLETE, NULL
+    }
+
+    public int getFile_count() {
+        return file_count;
+    }
+
+    public void setFile_count(int file_count) {
+        this.file_count = file_count;
+    }
+
+    public int getSteps() {
+        return steps;
+    }
+
+    public void setSteps(int steps) {
+        this.steps = steps;
     }
 }

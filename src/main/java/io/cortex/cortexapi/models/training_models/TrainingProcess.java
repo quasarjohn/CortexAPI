@@ -9,6 +9,8 @@ public class TrainingProcess {
     private String runtime;
     private ArrayList<String> labels;
     private Process process;
+    private int file_count;
+    private int steps;
 
     public Process getProcess() {
         return process;
@@ -53,5 +55,21 @@ public class TrainingProcess {
 
     public enum TrainingStatus {
         TRAINING, TRAINING_STOPPED, TRAINING_COMPLETE, NULL
+    }
+
+    public int getFile_count() {
+        return file_count;
+    }
+
+    public void setFile_count(int file_count) {
+        this.file_count = file_count;
+    }
+
+    public int getSteps() {
+        return steps;
+    }
+
+    public void setSteps(int steps) {
+        this.steps = steps;
     }
 }

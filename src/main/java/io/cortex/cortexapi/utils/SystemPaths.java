@@ -17,7 +17,7 @@ public class SystemPaths {
             CORTEX_TF_FILES_PATH + "/models/%s";
 
     public static final String TRAINING_STEPS_LOG =
-            CORTEX_USER_MODELS_PATH + "/training_steps_log.txt";
+            CORTEX_USER_MODELS_PATH + "/";
 
     public static final String MODEL_DIR = "E:/tf_files/";
 

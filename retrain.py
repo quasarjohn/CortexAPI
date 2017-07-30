@@ -154,7 +154,6 @@ def create_image_lists(image_dir, testing_percentage, validation_percentage):
         if dir_name == image_dir:
             continue
         tf.logging.info("Looking for images in '" + dir_name + "'\n'")
-        with open(FLAGS.training_logs_dir, "a") as myfile: myfile.write("Looking for images in '" + dir_name + "'\n")
         for extension in extensions:
             file_glob = os.path.join(image_dir, dir_name, '*.' + extension)
             file_list.extend(gfile.Glob(file_glob))
@@ -353,6 +352,7 @@ def ensure_dir_exists(dir_name):
 
 bottleneck_path_2_bottleneck_values = {}
 
+mycounter = 0
 
 def create_bottleneck_file(bottleneck_path, image_lists, label_name, index,
                            image_dir, category, sess, jpeg_data_tensor,
@@ -360,7 +360,11 @@ def create_bottleneck_file(bottleneck_path, image_lists, label_name, index,
                            bottleneck_tensor):
     """Create a single bottleneck file."""
     tf.logging.info('Creating bottleneck at ' + bottleneck_path)
-    with open(FLAGS.training_logs_dir, "a") as myfile: myfile.write('Creating bottleneck at ' + bottleneck_path + '\n')
+    with open(FLAGS.training_logs_dir + "training_steps_log", "a") as myfile: myfile.write('Processing image ' + str(mycounter) + '\n')
+    with open(FLAGS.training_logs_dir + "single_log", "w") as myfile: myfile.write('Processing image ' + str(mycounter) + '\n')
+    with open(FLAGS.training_logs_dir + "counter_log", "w") as myfile: myfile.write(str(mycounter))
+    global mycounter
+    mycounter += 1
     image_path = get_image_path(image_lists, label_name, index,
                                 image_dir, category)
     if not gfile.Exists(image_path):
@@ -480,7 +484,6 @@ def cache_bottlenecks(sess, image_lists, image_dir, bottleneck_dir,
                 how_many_bottlenecks += 1
                 if how_many_bottlenecks % 100 == 0:
                     tf.logging.info(str(how_many_bottlenecks) + ' bottleneck files created.')
-                    with open(FLAGS.training_logs_dir, "a") as myfile: myfile.write(str(how_many_bottlenecks) + ' bottleneck files created.\n')
 
 def get_random_cached_bottlenecks(sess, image_lists, how_many, category,
                                   bottleneck_dir, image_dir, jpeg_data_tensor,
@@ -1083,8 +1086,15 @@ def main(_):
                                 (datetime.now(), i, train_accuracy * 100))
                 tf.logging.info('%s: Step %d: Cross entropy = %f' %
                                 (datetime.now(), i, cross_entropy_value))
-                with open(FLAGS.training_logs_dir, "a") as myfile:myfile.write('%s: Step %d: Train accuracy = %.1f%%\n' %
+                with open(FLAGS.training_logs_dir + "training_steps_log", "a") as myfile:myfile.write('%s: Step %d: Train accuracy = %.1f%%\n' %
                                         (datetime.now(), i, train_accuracy * 100))
+                with open(FLAGS.training_logs_dir + "single_log", "w") as myfile:myfile.write('%s: Step %d: Train accuracy = %.1f%%\n' %
+                                         (datetime.now(), i, train_accuracy * 100))
+
+                global mycounter
+                with open(FLAGS.training_logs_dir + "counter_log", "w") as myfile: myfile.write(str(mycounter))
+                mycounter += 10
+
                 validation_bottlenecks, validation_ground_truth, _ = (
                     get_random_cached_bottlenecks(
                         sess, image_lists, FLAGS.validation_batch_size, 'validation',
@@ -1101,9 +1111,13 @@ def main(_):
                 tf.logging.info('%s: Step %d: Validation accuracy = %.1f%% (N=%d)' %
                                 (datetime.now(), i, validation_accuracy * 100,
                                  len(validation_bottlenecks)))
-                with open(FLAGS.training_logs_dir, "a") as myfile:myfile.write('%s: Step %d: Validation accuracy = %.1f%% (N=%d)\n' %
+                with open(FLAGS.training_logs_dir + "training_steps_log", "a") as myfile:myfile.write('%s: Step %d: Validation accuracy = %.1f%% (N=%d)\n' %
                                                                                (datetime.now(), i, validation_accuracy * 100,
                                                                                 len(validation_bottlenecks)))
+                with open(FLAGS.training_logs_dir + "single_log", "w") as myfile:myfile.write('%s: Step %d: Validation accuracy = %.1f%% (N=%d)\n' %
+                                                                               (datetime.now(), i, validation_accuracy * 100,
+                                                                                len(validation_bottlenecks)))
+
 
 
         # Store intermediate results
@@ -1131,8 +1145,10 @@ def main(_):
                        ground_truth_input: test_ground_truth})
         tf.logging.info('Final test accuracy = %.1f%% (N=%d)' %
                         (test_accuracy * 100, len(test_bottlenecks)))
-        with open(FLAGS.training_logs_dir, "a") as myfile:myfile.write('Final test accuracy = %.1f%% (N=%d)\n' %
+        with open(FLAGS.training_logs_dir + "training_steps_log", "a") as myfile:myfile.write('Final test accuracy = %.1f%% (N=%d)\n' %
                                                                        (test_accuracy * 100, len(test_bottlenecks)))
+        with open(FLAGS.training_logs_dir + "single_log", "w") as myfile:myfile.write('Final test accuracy = %.1f%% (N=%d)\n' %
+                                                                        (test_accuracy * 100, len(test_bottlenecks)))
 
         if FLAGS.print_misclassified_test_images:
             tf.logging.info('=== MISCLASSIFIED TEST IMAGES ===')
