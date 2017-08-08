@@ -26,7 +26,7 @@ import java.util.stream.Collectors;
 @RequestMapping("/api")
 public class ClassificationController {
 
-    //@CrossOrigin(origins = "http://192.168.0.149:8090")
+    @CrossOrigin(origins = "http://192.168.0.149:8090")
     @GetMapping("/{api_key}/classifier/classify_image/{model_key}")
     public ReturnObject classify_image(@PathVariable String api_key,
                                        @PathVariable String model_key,
@@ -38,9 +38,8 @@ public class ClassificationController {
             throws UnsupportedEncodingException {
 
         ReturnObject returnObject = new ReturnObject();
-
-
         returnObject.setCode(ReturnCode.OK);
+
         OnlineClassificationService classificationService = new OnlineClassificationService();
         returnObject.setContent(classificationService.classifyImage(img_url, max_results.get(), order.get()));
 
@@ -55,43 +54,34 @@ public class ClassificationController {
             @PathVariable(value = "api_key") String api_key,
             @PathVariable(value = "model_key") String model_key,
             @RequestParam("extraField") String extraField,
-            @RequestParam("files") MultipartFile[] uploadfiles){
-
-        System.out.println(api_key);
+            @RequestParam("files") MultipartFile[] uploadfiles) throws IOException {
 
         ReturnObject returnObject = new ReturnObject();
         returnObject.setCode(ReturnCode.BAD_REQUEST);
-
         // Get file name
         String uploadedFileName = Arrays.stream(uploadfiles).map(x -> x.getOriginalFilename())
                 .filter(x -> !StringUtils.isEmpty(x)).collect(Collectors.joining(" , "));
 
         if (StringUtils.isEmpty(uploadedFileName)) {
-            return new ResponseEntity("please select a file!", HttpStatus.OK);
+            return new ResponseEntity(returnObject, HttpStatus.OK);
         }
 
-        try {
-            List<MultipartFile> files = Arrays.asList(uploadfiles);
-            for (MultipartFile file : files) {
-                if (file.isEmpty()) {
-                    continue; //next pls
-                }
-                String file_path = String.format(UPLOADED_FOLDER, api_key) + "/" + file.getOriginalFilename();
-                byte[] bytes = file.getBytes();
-                Path path = Paths.get(file_path);
-                //wait for the file to be written to disk then classify it
-                Files.write(path, bytes);
-
-                List<Classification> classifications = new OnlineClassificationService().
-                        classifyImage("file:///" + file_path, 5, "probability_desc");
-                returnObject.setCode(ReturnCode.OK);
-                returnObject.setContent(classifications);
+        List<MultipartFile> files = Arrays.asList(uploadfiles);
+        for (MultipartFile file : files) {
+            if (file.isEmpty()) {
+                continue; //next pls
             }
+            String file_path = String.format(UPLOADED_FOLDER, api_key) + "/" + file.getOriginalFilename();
+            byte[] bytes = file.getBytes();
+            Path path = Paths.get(file_path);
+            //wait for the file to be written to disk then classify it
+            Files.write(path, bytes);
 
-        } catch (IOException e) {
-            e.printStackTrace();
+            List<Classification> classifications = new OnlineClassificationService().
+                    classifyImage("file:///" + file_path, 5, "probability_desc");
+            returnObject.setCode(ReturnCode.OK);
+            returnObject.setContent(classifications);
         }
-
         return new ResponseEntity(returnObject, HttpStatus.OK);
     }
 }

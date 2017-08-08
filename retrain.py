@@ -122,7 +122,7 @@ MAX_NUM_IMAGES_PER_CLASS = 2 ** 27 - 1  # ~134M
 
 
 def create_image_lists(image_dir, testing_percentage, validation_percentage):
-    """Builds a list of io.cortex.cortexapi.models.training_models images from the file system.
+    """Builds a list of  images from the file system.
 
     Analyzes the sub folders in the image directory, splits them into stable
     io.cortex.cortexapi.models.training_models, testing, and validation sets, and returns a data structure
@@ -180,7 +180,7 @@ def create_image_lists(image_dir, testing_percentage, validation_percentage):
             # the same leaf.
             hash_name = re.sub(r'_nohash_.*$', '', file_name)
             # This looks a bit magical, but we need to decide whether this file should
-            # go into the io.cortex.cortexapi.models.training_models, testing, or validation sets, and we want to keep
+            # go into the models, testing, or validation sets, and we want to keep
             # existing files in the same set even if more files are subsequently
             # added.
             # To do that, we need a stable way of deciding based on just the file name

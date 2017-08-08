@@ -254,6 +254,13 @@ public class TrainingController {
                     @Override
                     public void onSuccess(@Nullable Process process) {
                         System.out.println("TRAINING SUCCESS");
+                        try {
+                            //delete temp files
+                            org.apache.commons.io.FileUtils.cleanDirectory(
+                                    new File(String.format(SystemPaths.CORTEX_TRAINING_TEMP, api_key)));
+                        } catch (IOException e) {
+                            e.printStackTrace();
+                        }
                     }
 
                     @Override
