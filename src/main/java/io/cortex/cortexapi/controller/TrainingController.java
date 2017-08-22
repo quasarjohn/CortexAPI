@@ -205,12 +205,6 @@ public class TrainingController {
         }
     }
 
-    @RequestMapping("/test/{name}")
-    public String test(@PathVariable String name, @RequestParam(value = "path", defaultValue = "") String path) {
-        return name + " : " + path;
-    }
-
-
     private static String UPLOADED_FOLDER = SystemPaths.CORTEX_TRAINING_TEMP;
 
     @PostMapping("/{api_key}/trainer/upload_train_model/{category}/{training_steps}")
@@ -300,7 +294,6 @@ public class TrainingController {
         for (MultipartFile file : files) {
 
             System.out.println(file.getOriginalFilename());
-
 
             InputStream inputStream = file.getInputStream();
             OutputStream outputStream = new FileOutputStream(new File(file_path));

@@ -21,4 +21,6 @@ public class SystemPaths {
 
     public static final String MODEL_DIR = "E:/tf_files/";
 
+    public static final String CROSS_ORIGINS = "192.168.0.149";
+
 }

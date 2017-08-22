@@ -37,11 +37,14 @@ public class ClassificationController {
                                                Optional<String> order)
             throws UnsupportedEncodingException {
 
+        System.out.print("CLASSIFICATION FOR " + img_url);
+
+
         ReturnObject returnObject = new ReturnObject();
         returnObject.setCode(ReturnCode.OK);
 
         OnlineClassificationService classificationService = new OnlineClassificationService();
-        returnObject.setContent(classificationService.classifyImage(img_url, max_results.get(), order.get()));
+        returnObject.setContent(classificationService.classifyImage(img_url, 5,"probability_desc"));
 
         return returnObject;
     }
