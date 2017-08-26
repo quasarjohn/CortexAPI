@@ -21,12 +21,34 @@ import java.util.List;
 
 public class OnlineClassificationService {
 
-    public List<Classification> classifyImage(String img_url, int max_results, String order)
+    private static final String PUBLIC_API_KEY = "publicapikey";
+
+    public List<Classification> classifyImage(String api_key, String model_key, String img_url, int max_results, String order)
             throws UnsupportedEncodingException {
+
+        String modelDir = SystemPaths.MODEL_DIR;
+        /*
+        If the api key used for the request is the public api key, allow access only to demo classifiers
+         */
+        if (api_key.equals(PUBLIC_API_KEY)) {
+            switch (model_key) {
+                case "bills":
+                    modelDir = String.format(SystemPaths.CLASSIFIERS_DIR, "demo", "bills");
+                    break;
+                case "flowers":
+                    modelDir = String.format(SystemPaths.CLASSIFIERS_DIR, "demo", "flowers");
+                    break;
+                case "hand_gestures":
+                    modelDir = String.format(SystemPaths.CLASSIFIERS_DIR, "demo", "hand_gestures");
+                    break;
+                default:
+                    break;
+            }
+        }
+
         List<Classification> classifications = new ArrayList<>();
 
         //TODO this is a temporary location. The model dir should be automatically identified based on the model key
-        String modelDir = SystemPaths.MODEL_DIR;
 
         byte[] graphDef = readAllBytesOrExit(Paths.get(modelDir, "retrained_graph.pb"));
         List<String> labels =

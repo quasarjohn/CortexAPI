@@ -23,4 +23,6 @@ public class SystemPaths {
 
     public static final String CROSS_ORIGINS = "192.168.0.149";
 
+    public static final String CLASSIFIERS_DIR = "E:/CORTEX_DATA/classifier/public/%s/%s/";
+
 }

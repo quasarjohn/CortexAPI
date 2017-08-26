@@ -31,7 +31,7 @@ public class ClassificationController {
     public ReturnObject classify_image(@PathVariable String api_key,
                                        @PathVariable String model_key,
                                        @RequestParam(value = "img_url") String img_url,
-                                       @RequestParam(value = "max_results", defaultValue = "3", required = false)
+                                       @RequestParam(value = "max_results", defaultValue = "5", required = false)
                                                Optional<Integer> max_results,
                                        @RequestParam(value = "order", defaultValue = "probability_desc", required = false)
                                                Optional<String> order)
@@ -44,7 +44,7 @@ public class ClassificationController {
         returnObject.setCode(ReturnCode.OK);
 
         OnlineClassificationService classificationService = new OnlineClassificationService();
-        returnObject.setContent(classificationService.classifyImage(img_url, 5,"probability_desc"));
+        returnObject.setContent(classificationService.classifyImage(api_key, model_key, img_url, max_results.get(), order.get()));
 
         return returnObject;
     }
@@ -81,7 +81,7 @@ public class ClassificationController {
             Files.write(path, bytes);
 
             List<Classification> classifications = new OnlineClassificationService().
-                    classifyImage("file:///" + file_path, 5, "probability_desc");
+                    classifyImage(api_key, model_key, "file:///" + file_path, 5, "probability_desc");
             returnObject.setCode(ReturnCode.OK);
             returnObject.setContent(classifications);
         }
