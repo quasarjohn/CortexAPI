@@ -27,6 +27,9 @@ public class TrainingService {
             f = new File(output_path);
             f.mkdirs();
 
+            f = new File(training_logs_dir);
+            f.mkdirs();
+
             //bottlenecks
             String bottlenecks_path = temp_path + "/bottlenecks";
             //model dir

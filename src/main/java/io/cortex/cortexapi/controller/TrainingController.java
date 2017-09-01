@@ -131,7 +131,7 @@ public class TrainingController {
     }
 
     @RequestMapping("/{key}/trainer/logs")
-    @CrossOrigin(origins = "http://192.168.0.149:8090")
+    @CrossOrigin(origins = SystemPaths.CROSS_ORIGINS)
     public ArrayList<TrainingLog> logs(@PathVariable String key) {
         ArrayList<TrainingLog> trainingLogs = new ArrayList<>();
 
@@ -161,7 +161,7 @@ public class TrainingController {
     }
 
     @RequestMapping("/{key}/trainer/status")
-    @CrossOrigin(origins = "http://192.168.0.149:8090")
+    @CrossOrigin(origins = SystemPaths.CROSS_ORIGINS)
     public ReturnObject status(@PathVariable String key) {
         TrainingProcess process = processes.get(key);
 
@@ -208,7 +208,7 @@ public class TrainingController {
     private static String UPLOADED_FOLDER = SystemPaths.CORTEX_TRAINING_TEMP;
 
     @PostMapping("/{api_key}/trainer/upload_train_model/{category}/{training_steps}")
-    @CrossOrigin(origins = "http://192.168.0.149:8090")
+    @CrossOrigin(origins = SystemPaths.CROSS_ORIGINS)
     public ResponseEntity<?> upload_train_model(@PathVariable String api_key,
                                                 @PathVariable String category,
                                                 @PathVariable int training_steps,
@@ -291,6 +291,7 @@ public class TrainingController {
     }
 
     private void uploadFile(List<MultipartFile> files, ReturnObject returnObject, String file_path) throws IOException {
+
         for (MultipartFile file : files) {
 
             System.out.println(file.getOriginalFilename());

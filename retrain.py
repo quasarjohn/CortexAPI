@@ -1087,9 +1087,9 @@ def main(_):
                 tf.logging.info('%s: Step %d: Cross entropy = %f' %
                                 (datetime.now(), i, cross_entropy_value))
                 with open(FLAGS.training_logs_dir + "training_steps_log", "a") as myfile:myfile.write('%s: Step %d: Train accuracy = %.1f%%\n' %
-                                        (datetime.now(), i, train_accuracy * 100))
+                                                                                                      (datetime.now(), i, train_accuracy * 100))
                 with open(FLAGS.training_logs_dir + "single_log", "w") as myfile:myfile.write('%s: Step %d: Train accuracy = %.1f%%\n' %
-                                         (datetime.now(), i, train_accuracy * 100))
+                                                                                              (datetime.now(), i, train_accuracy * 100))
 
                 global mycounter
                 with open(FLAGS.training_logs_dir + "counter_log", "w") as myfile: myfile.write(str(mycounter))
@@ -1112,15 +1112,15 @@ def main(_):
                                 (datetime.now(), i, validation_accuracy * 100,
                                  len(validation_bottlenecks)))
                 with open(FLAGS.training_logs_dir + "training_steps_log", "a") as myfile:myfile.write('%s: Step %d: Validation accuracy = %.1f%% (N=%d)\n' %
-                                                                               (datetime.now(), i, validation_accuracy * 100,
-                                                                                len(validation_bottlenecks)))
+                                                                                                      (datetime.now(), i, validation_accuracy * 100,
+                                                                                                       len(validation_bottlenecks)))
                 with open(FLAGS.training_logs_dir + "single_log", "w") as myfile:myfile.write('%s: Step %d: Validation accuracy = %.1f%% (N=%d)\n' %
-                                                                               (datetime.now(), i, validation_accuracy * 100,
-                                                                                len(validation_bottlenecks)))
+                                                                                              (datetime.now(), i, validation_accuracy * 100,
+                                                                                               len(validation_bottlenecks)))
 
 
 
-        # Store intermediate results
+                # Store intermediate results
             intermediate_frequency = FLAGS.intermediate_store_frequency
 
             if (intermediate_frequency > 0 and (i % intermediate_frequency == 0)
@@ -1146,9 +1146,9 @@ def main(_):
         tf.logging.info('Final test accuracy = %.1f%% (N=%d)' %
                         (test_accuracy * 100, len(test_bottlenecks)))
         with open(FLAGS.training_logs_dir + "training_steps_log", "a") as myfile:myfile.write('Final test accuracy = %.1f%% (N=%d)\n' %
-                                                                       (test_accuracy * 100, len(test_bottlenecks)))
+                                                                                              (test_accuracy * 100, len(test_bottlenecks)))
         with open(FLAGS.training_logs_dir + "single_log", "w") as myfile:myfile.write('Final test accuracy = %.1f%% (N=%d)\n' %
-                                                                        (test_accuracy * 100, len(test_bottlenecks)))
+                                                                                      (test_accuracy * 100, len(test_bottlenecks)))
 
         if FLAGS.print_misclassified_test_images:
             tf.logging.info('=== MISCLASSIFIED TEST IMAGES ===')
