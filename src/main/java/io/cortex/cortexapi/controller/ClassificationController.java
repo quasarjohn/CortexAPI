@@ -26,7 +26,7 @@ import java.util.stream.Collectors;
 @RequestMapping("/api")
 public class ClassificationController {
 
-    @CrossOrigin(origins = "http://192.168.0.149:8090")
+    @CrossOrigin(origins = SystemPaths.CROSS_ORIGINS)
     @GetMapping("/{api_key}/classifier/classify_image/{model_key}")
     public ReturnObject classify_image(@PathVariable String api_key,
                                        @PathVariable String model_key,
@@ -52,7 +52,7 @@ public class ClassificationController {
     private static String UPLOADED_FOLDER = SystemPaths.CORTEX_CLASSIFICATION_TEMP_PATH;
 
     @PostMapping("/{api_key}/classifier/upload_classify_image/{model_key}")
-    @CrossOrigin(origins = "http://192.168.0.149:8090")
+    @CrossOrigin(origins = SystemPaths.CROSS_ORIGINS)
     public ResponseEntity<?> upload_classify_model(
             @PathVariable(value = "api_key") String api_key,
             @PathVariable(value = "model_key") String model_key,

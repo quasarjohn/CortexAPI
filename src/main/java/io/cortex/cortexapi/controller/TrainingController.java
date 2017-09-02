@@ -261,6 +261,10 @@ public class TrainingController {
                     //wait for completion of training process then update processes hashmap
                     process.waitFor();
                     processes.get(api_key).setStatus(TrainingProcess.TrainingStatus.TRAINING_COMPLETE);
+                    FileWriter writer = new FileWriter(new File(new_file_path + "/metadata"));
+                    writer.write(processes.get(api_key).getSteps());
+
+
                     return null;
                 });
 
@@ -290,16 +294,23 @@ public class TrainingController {
                 int file_count = FileUtils.countImage(String.format(SystemPaths.CORTEX_TRAINING_TEMP, api_key)
                         + "/" + category);
 
-                //add process to monitored trainings so user can stop them later
+                //add process to monitored trainings so user can stop them later if they want to
                 TrainingProcess trainingProcess = new TrainingProcess();
                 trainingProcess.setProcess(process);
                 trainingProcess.setModel_name(category);
                 trainingProcess.setModel_name(category);
                 trainingProcess.setLabels(labels);
                 trainingProcess.setSteps(training_steps);
-                trainingProcess.setFile_count(file_count);
                 trainingProcess.setStatus(TrainingProcess.TrainingStatus.TRAINING);
+                trainingProcess.setUser(api_key);
+                trainingProcess.setFile_count(1000);
                 processes.put(api_key, trainingProcess);
+
+                try {
+                    Utils.writeMetaData(trainingProcess, new_file_path +"/metadata");
+                } catch (IOException e) {
+                    e.printStackTrace();
+                }
 
             });
             returnObject.setCode(ReturnCode.OK);

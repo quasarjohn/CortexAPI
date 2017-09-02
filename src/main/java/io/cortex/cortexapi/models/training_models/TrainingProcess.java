@@ -4,6 +4,7 @@ import java.util.ArrayList;
 
 public class TrainingProcess {
 
+    private String user;
     private String model_name;
     private TrainingStatus status = TrainingStatus.TRAINING;
     private String runtime;
@@ -71,5 +72,13 @@ public class TrainingProcess {
 
     public void setSteps(int steps) {
         this.steps = steps;
+    }
+
+    public String getUser() {
+        return user;
+    }
+
+    public void setUser(String user) {
+        this.user = user;
     }
 }

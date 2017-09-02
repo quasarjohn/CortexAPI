@@ -13,11 +13,12 @@ public class FileUtils {
         File parent = new File(path);
 
         for (File child : parent.listFiles()) {
-            for (File f : child.listFiles()) {
-                System.out.println(f.getName());
+            for (File ignored : child.listFiles()) {
                 imagesCount++;
             }
         }
+
+        System.out.println("IMAGES COUNT" + imagesCount);
         return imagesCount;
     }
 

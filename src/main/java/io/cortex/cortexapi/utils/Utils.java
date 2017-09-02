@@ -1,7 +1,13 @@
 package io.cortex.cortexapi.utils;
 
+import com.fasterxml.jackson.databind.ObjectMapper;
 import io.cortex.cortexapi.models.training_models.ReturnableTrainingProcess;
 import io.cortex.cortexapi.models.training_models.TrainingProcess;
+import io.cortex.cortexapi.models.user.Classifier;
+
+import java.io.*;
+import java.util.ArrayList;
+import java.util.Scanner;
 
 public class Utils {
 
@@ -35,5 +41,37 @@ public class Utils {
         returnableTrainingProcess.setSteps(trainingProcess.getSteps());
 
         return returnableTrainingProcess;
+    }
+
+    public static void writeMetaData(TrainingProcess trainingProcess, String path) throws IOException {
+        Classifier classifier = new Classifier();
+        classifier.setTitle(trainingProcess.getModel_name());
+        classifier.setAccuracy(readValidationAccuracy(trainingProcess.getUser(),
+                trainingProcess.getModel_name()));
+        classifier.setTraining_steps(trainingProcess.getSteps());
+        classifier.setFile_count(trainingProcess.getFile_count());
+        classifier.setLabels(trainingProcess.getLabels());
+
+        ObjectMapper mapper = new ObjectMapper();
+
+        writeFile(mapper.writeValueAsString(classifier), path);
+    }
+
+    public static String readValidationAccuracy(String user, String classifier) throws FileNotFoundException {
+        //read the validation accuracy from single log file
+        String path = String.format(SystemPaths.CORTEX_USER_MODELS_PATH, user, classifier) + "/single_log";
+
+        Scanner scanner = new Scanner(new File(path));
+        while (scanner.hasNextLine()) {
+            return scanner.nextLine();
+        }
+        return null;
+    }
+
+    public static void writeFile(String txt, String path) throws IOException {
+        FileWriter writer = new FileWriter(new File(path));
+        BufferedWriter bufferedWriter = new BufferedWriter(writer);
+        bufferedWriter.write(txt);
+        bufferedWriter.close();
     }
 }
