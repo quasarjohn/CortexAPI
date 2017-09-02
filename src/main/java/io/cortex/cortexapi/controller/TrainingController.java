@@ -24,6 +24,9 @@ import java.util.concurrent.Callable;
 import java.util.concurrent.ExecutorService;
 import java.util.concurrent.Executors;
 
+import java.nio.file.Files;
+import java.nio.file.Path;
+
 /**
  * Created by John on 7/15/2017.
  */
@@ -234,6 +237,17 @@ public class TrainingController {
         uploadFile(Arrays.asList(uploadFiles), returnObject, file_path);
         //unzip file
         unzipUtility.unzip(file_path, String.format(UPLOADED_FOLDER, api_key));
+
+        //get first image and use it as the thumbnail for the classifier
+        //by moving it to the public/models path of the specific classifier
+        String folder_path = String.format(UPLOADED_FOLDER, api_key) + "/" + category;
+        File folder_file = new File(folder_path);
+        File[] folders = folder_file.listFiles();
+        File[] images = folders[0].listFiles();
+        System.out.println(images[0].getPath());
+        String new_file_path = String.format(SystemPaths.CORTEX_USER_MODELS_PATH, api_key, category);
+        new File(new_file_path).mkdirs();
+        Files.copy(images[0].toPath(), new File(new_file_path + "/thumb.jpg").toPath());
 
         if (!Utils.userIsTraining(processes.get(api_key))) {
             //create new process
