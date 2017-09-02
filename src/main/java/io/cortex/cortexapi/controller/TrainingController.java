@@ -172,6 +172,7 @@ public class TrainingController {
             return returnObject;
         } else {
             String path = String.format(SystemPaths.TRAINING_STEPS_LOG, key, process.getModel_name());
+            System.out.println(path);
 
             double current_step = FileUtils.readDouble(path + "counter_log");
             String current_log = FileUtils.readString(path + "single_log");
@@ -222,6 +223,11 @@ public class TrainingController {
         ReturnObject returnObject = new ReturnObject();
         //default is bad request. It shall change depending on the result of the training
         returnObject.setCode(ReturnCode.BAD_REQUEST);
+
+        File f = new File(String.format(UPLOADED_FOLDER, api_key) + "/" + category);
+        f.mkdirs();
+        f = null;
+
         String file_path = String.format(UPLOADED_FOLDER, api_key) + "/" + category + ".zip";
 
         //upload file
