@@ -5,21 +5,21 @@ import io.cortex.cortexapi.models.return_models.ReturnCode;
 import io.cortex.cortexapi.models.return_models.ReturnObject;
 import io.cortex.cortexapi.models.user.Classifier;
 import io.cortex.cortexapi.utils.SystemPaths;
+import org.springframework.web.bind.annotation.CrossOrigin;
 import org.springframework.web.bind.annotation.PathVariable;
 import org.springframework.web.bind.annotation.RequestMapping;
 import org.springframework.web.bind.annotation.RestController;
 
 import java.io.File;
-import java.io.FileNotFoundException;
 import java.io.IOException;
 import java.util.ArrayList;
-import java.util.Scanner;
 
 @RestController
 @RequestMapping("/api/users")
 public class UserController {
 
     @RequestMapping("{username}/classifiers")
+    @CrossOrigin(origins = SystemPaths.CROSS_ORIGINS)
     public ReturnObject getUserClassifiers(@PathVariable String username) {
         ReturnObject returnObject = new ReturnObject();
         returnObject.setCode(ReturnCode.NOT_FOUND);
