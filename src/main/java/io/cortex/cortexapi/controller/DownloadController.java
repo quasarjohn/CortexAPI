@@ -1,6 +1,7 @@
 package io.cortex.cortexapi.controller;
 
 import io.cortex.cortexapi.db_models.Classifier;
+import io.cortex.cortexapi.service.ClassifierService;
 import io.cortex.cortexapi.utils.SystemPaths;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Controller;
@@ -23,14 +24,14 @@ import java.nio.file.Paths;
 @RequestMapping("/api/files")
 public class DownloadController {
 
-//    @Autowired
-//    ClassifierService classifierService;
+    @Autowired
+    ClassifierService classifierService;
 
     @RequestMapping(value = "/{model_key}/thumbnail", method = RequestMethod.GET)
     public void downloadFile(HttpServletResponse response,
                              @PathVariable String model_key) throws IOException {
 
-//        Classifier classifier = classifierService.findClassifierByModelKey(model_key);
+        Classifier classifier = classifierService.findClassifierByTitle(model_key);
 
         //the username and model key determines the path of the image
         String path = SystemPaths.CORTEX_USER_MODELS_PATH;
@@ -42,7 +43,7 @@ public class DownloadController {
          */
 
         //TODO change temporary email after you have implemented insert of classifier to database after training
-        File file = new File(String.format(path, "emair@gmair.com", model_key) + "/thumb.jpg");
+        File file = new File(String.format(path, classifier.getEmail(), model_key) + "/thumb.jpg");
 
         if (!file.exists()) {
             String errorMessage = "Sorry. The file you are looking for does not exist";

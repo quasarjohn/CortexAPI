@@ -61,7 +61,6 @@ public class FileUtils {
             }
             scanner.close();
         } catch (FileNotFoundException e) {
-            e.printStackTrace();
         }
 
         return value;

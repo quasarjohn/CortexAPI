@@ -6,4 +6,6 @@ import org.springframework.data.repository.CrudRepository;
 public interface ClassifierRepo extends CrudRepository<Classifier, String> {
 
     Classifier findClassifierByKey(String model_key);
+
+    Classifier findClassifierByTitle(String title);
 }

@@ -229,20 +229,26 @@ public class TrainingController {
         2. unzip file
         3. start training
          */
+
+        String file_name_with_extension = uploadFiles[0].getOriginalFilename();
+        String file_name = file_name_with_extension.replace(".zip", "");
+
+
+
         ReturnObject returnObject = new ReturnObject();
         //default is bad request. It shall change depending on the result of the training
         returnObject.setCode(ReturnCode.BAD_REQUEST);
 
-        File f = new File(String.format(UPLOADED_FOLDER, api_key) + "/" + category);
-        f.mkdirs();
-        f = null;
-
-        String file_path = String.format(UPLOADED_FOLDER, api_key) + "/" + category + ".zip";
+        String file_path = String.format(UPLOADED_FOLDER, api_key) + "/" + file_name_with_extension;
 
         //upload file
         uploadFile(Arrays.asList(uploadFiles), returnObject, file_path);
         //unzip file
         unzipUtility.unzip(file_path, String.format(UPLOADED_FOLDER, api_key));
+
+        //rename folder so tensorflow can find it
+        File f = new File(String.format(UPLOADED_FOLDER, api_key) + "/" + file_name);
+        f.renameTo(new File(String.format(UPLOADED_FOLDER, api_key) + "/" + category));
 
         //get first image and use it as the thumbnail for the classifier
         //by moving it to the public/models path of the specific classifier
@@ -372,7 +378,7 @@ public class TrainingController {
             while ((readbytes = inputStream.read(buffer, 0, 1024)) != -1) {
                 outputStream.write(buffer, 0, readbytes);
                 transfer += readbytes;
-                System.out.println(transfer / size);
+//                System.out.println(transfer / size);
             }
             inputStream.close();
             outputStream.close();

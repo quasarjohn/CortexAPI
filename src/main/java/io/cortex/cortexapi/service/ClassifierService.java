@@ -7,5 +7,7 @@ public interface ClassifierService {
 
     Classifier findClassifierByKey(String model_key);
 
+    Classifier findClassifierByTitle(String title);
+
     void save(Classifier classifier);
 }
