@@ -4,6 +4,7 @@ import io.cortex.cortexapi.models.documentation.Parameter;
 import io.cortex.cortexapi.models.documentation.ReturnableDocumentation;
 import io.cortex.cortexapi.models.return_models.ReturnCode;
 import io.cortex.cortexapi.models.return_models.ReturnObject;
+import io.cortex.cortexapi.utils.SystemPaths;
 import org.springframework.web.bind.annotation.*;
 
 import java.util.ArrayList;
@@ -12,7 +13,7 @@ import java.util.ArrayList;
 @RequestMapping("/api/docs")
 public class DocumentationController {
 
-    @CrossOrigin(origins = "http://192.168.0.149:8090")
+    @CrossOrigin(origins = SystemPaths.CROSS_ORIGINS)
     @GetMapping("/classifier/classify-from-url")
     public ReturnObject getDocClassifyFromURL() {
 
@@ -79,7 +80,7 @@ public class DocumentationController {
     }
 
 
-    @CrossOrigin(origins = "http://192.168.0.149:8090")
+    @CrossOrigin(origins =SystemPaths.CROSS_ORIGINS)
     @GetMapping("/classifier/upload-classify")
     public ReturnObject getDocUploadAndClassify() {
 
@@ -132,7 +133,7 @@ public class DocumentationController {
     }
 
 
-    @CrossOrigin(origins = "http://192.168.0.149:8090")
+    @CrossOrigin(origins = SystemPaths.CROSS_ORIGINS)
     @GetMapping("/trainer/train")
     public ReturnObject getDocTrain() {
 
@@ -185,7 +186,7 @@ public class DocumentationController {
     }
 
 
-    @CrossOrigin(origins = "http://192.168.0.149:8090")
+    @CrossOrigin(origins = SystemPaths.CROSS_ORIGINS)
     @GetMapping("/trainer/status")
     public ReturnObject getStatus() {
 
@@ -233,7 +234,7 @@ public class DocumentationController {
     }
 
 
-    @CrossOrigin(origins = "http://192.168.0.149:8090")
+    @CrossOrigin(origins = SystemPaths.CROSS_ORIGINS)
     @GetMapping("/trainer/info")
     public ReturnObject getTrainingInfo() {
 
@@ -281,7 +282,7 @@ public class DocumentationController {
     }
 
 
-    @CrossOrigin(origins = "http://192.168.0.149:8090")
+    @CrossOrigin(origins = SystemPaths.CROSS_ORIGINS)
     @GetMapping("/trainer/logs")
     public ReturnObject getTraningLogs() {
 
@@ -325,7 +326,7 @@ public class DocumentationController {
         return returnObject;
     }
 
-    @CrossOrigin(origins = "http://192.168.0.149:8090")
+    @CrossOrigin(origins = SystemPaths.CROSS_ORIGINS)
     @GetMapping("/trainer/stop")
     public ReturnObject stopTraining() {
 

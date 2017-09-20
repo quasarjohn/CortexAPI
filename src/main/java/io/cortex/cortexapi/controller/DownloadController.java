@@ -1,6 +1,8 @@
 package io.cortex.cortexapi.controller;
 
+import io.cortex.cortexapi.db_models.Classifier;
 import io.cortex.cortexapi.utils.SystemPaths;
+import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Controller;
 import org.springframework.util.FileCopyUtils;
 import org.springframework.web.bind.annotation.PathVariable;
@@ -21,9 +23,14 @@ import java.nio.file.Paths;
 @RequestMapping("/api/files")
 public class DownloadController {
 
+//    @Autowired
+//    ClassifierService classifierService;
+
     @RequestMapping(value = "/{model_key}/thumbnail", method = RequestMethod.GET)
     public void downloadFile(HttpServletResponse response,
                              @PathVariable String model_key) throws IOException {
+
+//        Classifier classifier = classifierService.findClassifierByModelKey(model_key);
 
         //the username and model key determines the path of the image
         String path = SystemPaths.CORTEX_USER_MODELS_PATH;
@@ -33,6 +40,8 @@ public class DownloadController {
         implemented. Once implemented, we should search for the username/email based
         on the model key so we can determine the path of the classifier and its content
          */
+
+        //TODO change temporary email after you have implemented insert of classifier to database after training
         File file = new File(String.format(path, "emair@gmair.com", model_key) + "/thumb.jpg");
 
         if (!file.exists()) {

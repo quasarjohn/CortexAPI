@@ -3,10 +3,9 @@ package io.cortex.cortexapi.utils;
 import com.fasterxml.jackson.databind.ObjectMapper;
 import io.cortex.cortexapi.models.training_models.ReturnableTrainingProcess;
 import io.cortex.cortexapi.models.training_models.TrainingProcess;
-import io.cortex.cortexapi.models.user.Classifier;
+import io.cortex.cortexapi.models.user.CortexClassifier;
 
 import java.io.*;
-import java.util.ArrayList;
 import java.util.Scanner;
 
 public class Utils {
@@ -44,7 +43,7 @@ public class Utils {
     }
 
     public static void writeMetaData(TrainingProcess trainingProcess, String path) throws IOException {
-        Classifier classifier = new Classifier();
+        CortexClassifier classifier = new CortexClassifier();
         classifier.setTitle(trainingProcess.getModel_name());
         classifier.setAccuracy(readValidationAccuracy(trainingProcess.getUser(),
                 trainingProcess.getModel_name()));

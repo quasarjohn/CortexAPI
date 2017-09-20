@@ -2,10 +2,13 @@ package io.cortex.cortexapi.controller;
 
 import com.google.common.util.concurrent.*;
 
+import io.cortex.cortexapi.db_models.Classifier;
 import io.cortex.cortexapi.models.return_models.ReturnCode;
 import io.cortex.cortexapi.models.return_models.ReturnObject;
 import io.cortex.cortexapi.models.training_models.*;
+import io.cortex.cortexapi.service.ClassifierService;
 import io.cortex.cortexapi.utils.UnzipUtility;
+import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.*;
@@ -34,6 +37,9 @@ import java.nio.file.Path;
 @RestController
 @RequestMapping("/api")
 public class TrainingController {
+
+    @Autowired
+    ClassifierService classifierService;
 
     private static UnzipUtility unzipUtility = new UnzipUtility();
     //monitor process
@@ -134,7 +140,7 @@ public class TrainingController {
     }
 
     @RequestMapping("/{key}/trainer/logs")
-    @CrossOrigin(origins = SystemPaths.CROSS_ORIGINS)
+    @CrossOrigin(origins = {})
     public ArrayList<TrainingLog> logs(@PathVariable String key) {
         ArrayList<TrainingLog> trainingLogs = new ArrayList<>();
 
@@ -261,10 +267,29 @@ public class TrainingController {
                     //wait for completion of training process then update processes hashmap
                     process.waitFor();
                     processes.get(api_key).setStatus(TrainingProcess.TrainingStatus.TRAINING_COMPLETE);
-                    FileWriter writer = new FileWriter(new File(new_file_path + "/metadata"));
-                    writer.write(processes.get(api_key).getSteps());
 
 
+//                    FileWriter writer = new FileWriter(new File(new_file_path + "/metadata"));
+//                    writer.write(processes.get(api_key).getSteps());
+
+                    //write METADATA TO TEXT FILE
+
+                    TrainingProcess process1 = processes.get(api_key);
+                    try {
+                        Utils.writeMetaData(processes.get(process1), new_file_path + "/metadata");
+                    } catch (IOException e) {
+                        e.printStackTrace();
+                    }
+
+                    //insert data of the classifier to database
+                    Classifier classifier = new Classifier();
+                    //TODO find email by api. I'm not sure though if the api key being passed is actually the email
+                    classifier.setEmail(api_key);
+
+                    String model_key = UUID.randomUUID().toString().substring(1, 10);
+                    classifier.setKey(model_key);
+                    classifier.setTitle(category);
+//                    classifierService.save(classifier);
                     return null;
                 });
 
@@ -306,11 +331,20 @@ public class TrainingController {
                 trainingProcess.setFile_count(1000);
                 processes.put(api_key, trainingProcess);
 
+                //TODO I already write metadata when the user starts training. It should be added after training so we get the proper training data
                 try {
-                    Utils.writeMetaData(trainingProcess, new_file_path +"/metadata");
+                    Utils.writeMetaData(trainingProcess, new_file_path + "/metadata");
                 } catch (IOException e) {
                     e.printStackTrace();
                 }
+
+                //TODO this is an early write to the database. must be removed after the test is done
+                Classifier classifier = new Classifier();
+                classifier.setEmail(api_key);
+                String model_key = UUID.randomUUID().toString().substring(1, 10);
+                classifier.setKey(model_key);
+                classifier.setTitle(category);
+                classifierService.save(classifier);
 
             });
             returnObject.setCode(ReturnCode.OK);

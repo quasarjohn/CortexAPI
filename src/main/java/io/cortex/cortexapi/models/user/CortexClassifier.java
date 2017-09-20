@@ -2,7 +2,7 @@ package io.cortex.cortexapi.models.user;
 
 import java.util.ArrayList;
 
-public class Classifier {
+public class CortexClassifier {
 
     private String title, img_url;
     private long file_size;
