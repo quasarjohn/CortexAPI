@@ -234,7 +234,6 @@ public class TrainingController {
         String file_name = file_name_with_extension.replace(".zip", "");
 
 
-
         ReturnObject returnObject = new ReturnObject();
         //default is bad request. It shall change depending on the result of the training
         returnObject.setCode(ReturnCode.BAD_REQUEST);
@@ -271,14 +270,10 @@ public class TrainingController {
                 //submit process in the listening executor service for update when process is completed
                 ListenableFuture<Process> listenableProcess = listeningExecutorService.submit(() -> {
                     //wait for completion of training process then update processes hashmap
-                    process.waitFor();
-                    processes.get(api_key).setStatus(TrainingProcess.TrainingStatus.TRAINING_COMPLETE);
 
-
-//                    FileWriter writer = new FileWriter(new File(new_file_path + "/metadata"));
-//                    writer.write(processes.get(api_key).getSteps());
-
-                    //write METADATA TO TEXT FILE
+                    //TODO this is a premature write to the database and metadata so I can already see if it works before the training is done kasi naman ang tagal nia matapos :(.
+                    FileWriter writer = new FileWriter(new File(new_file_path + "/metadata"));
+                    writer.write(processes.get(api_key).getSteps());
 
                     TrainingProcess process1 = processes.get(api_key);
                     try {
@@ -287,15 +282,30 @@ public class TrainingController {
                         e.printStackTrace();
                     }
 
+                    process.waitFor();
+                    processes.get(api_key).setStatus(TrainingProcess.TrainingStatus.TRAINING_COMPLETE);
+
+
+//                    write METADATA TO TEXT FILE
+                    FileWriter writer1 = new FileWriter(new File(new_file_path + "/metadata"));
+                    writer.write(processes.get(api_key).getSteps());
+
+                    TrainingProcess process2 = processes.get(api_key);
+                    try {
+                        Utils.writeMetaData(processes.get(process1), new_file_path + "/metadata");
+                    } catch (IOException e) {
+                        e.printStackTrace();
+                    }
+
+
                     //insert data of the classifier to database
                     Classifier classifier = new Classifier();
-                    //TODO find email by api. I'm not sure though if the api key being passed is actually the email
                     classifier.setEmail(api_key);
 
                     String model_key = UUID.randomUUID().toString().substring(1, 10);
                     classifier.setKey(model_key);
                     classifier.setTitle(category);
-//                    classifierService.save(classifier);
+                    classifierService.save(classifier);
                     return null;
                 });
 
