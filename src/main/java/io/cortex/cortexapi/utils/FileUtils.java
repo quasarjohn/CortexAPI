@@ -44,7 +44,7 @@ public class FileUtils {
             }
             scanner.close();
         } catch (FileNotFoundException e) {
-            e.printStackTrace();
+//            e.printStackTrace();
         }
 
         return value;

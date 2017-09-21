@@ -272,10 +272,12 @@ public class TrainingController {
                     //wait for completion of training process then update processes hashmap
 
                     //TODO this is a premature write to the database and metadata so I can already see if it works before the training is done kasi naman ang tagal nia matapos :(.
-                    FileWriter writer = new FileWriter(new File(new_file_path + "/metadata"));
-                    writer.write(processes.get(api_key).getSteps());
+//                    FileWriter writer = new FileWriter(new File(new_file_path + "/metadata"));
+//                    writer.write(processes.get(api_key).getSteps());
 
                     TrainingProcess process1 = processes.get(api_key);
+                    System.out.println("PRINTING METADATA");
+                    System.out.println(process1);
                     try {
                         Utils.writeMetaData(processes.get(process1), new_file_path + "/metadata");
                     } catch (IOException e) {
@@ -285,20 +287,13 @@ public class TrainingController {
                     process.waitFor();
                     processes.get(api_key).setStatus(TrainingProcess.TrainingStatus.TRAINING_COMPLETE);
 
-
-//                    write METADATA TO TEXT FILE
-                    FileWriter writer1 = new FileWriter(new File(new_file_path + "/metadata"));
-                    writer.write(processes.get(api_key).getSteps());
-
-                    TrainingProcess process2 = processes.get(api_key);
+                    //write metadata and insert classifier to database after training
                     try {
-                        Utils.writeMetaData(processes.get(process1), new_file_path + "/metadata");
+                        Utils.writeMetaData(processes.get(api_key), new_file_path + "/metadata");
                     } catch (IOException e) {
                         e.printStackTrace();
                     }
 
-
-                    //insert data of the classifier to database
                     Classifier classifier = new Classifier();
                     classifier.setEmail(api_key);
 
@@ -312,6 +307,9 @@ public class TrainingController {
                 Futures.addCallback(listenableProcess, new FutureCallback<Process>() {
                     @Override
                     public void onSuccess(@Nullable Process process) {
+
+                        //insert data of the classifier to database
+
                         System.out.println("TRAINING SUCCESS");
                         try {
                             //delete temp files
@@ -344,24 +342,16 @@ public class TrainingController {
                 trainingProcess.setSteps(training_steps);
                 trainingProcess.setStatus(TrainingProcess.TrainingStatus.TRAINING);
                 trainingProcess.setUser(api_key);
-                trainingProcess.setFile_count(1000);
+                trainingProcess.setFile_count(file_count);
                 processes.put(api_key, trainingProcess);
 
-                //TODO I already write metadata when the user starts training. It should be added after training so we get the proper training data
+                System.out.println("WRITING METADATA");
+//                //TODO I already write metadata when the user starts training. It should be added after training so we get the proper training data
                 try {
                     Utils.writeMetaData(trainingProcess, new_file_path + "/metadata");
                 } catch (IOException e) {
                     e.printStackTrace();
                 }
-
-                //TODO this is an early write to the database. must be removed after the test is done
-                Classifier classifier = new Classifier();
-                classifier.setEmail(api_key);
-                String model_key = UUID.randomUUID().toString().substring(1, 10);
-                classifier.setKey(model_key);
-                classifier.setTitle(category);
-                classifierService.save(classifier);
-
             });
             returnObject.setCode(ReturnCode.OK);
             return new ResponseEntity<Object>(returnObject, HttpStatus.OK);
