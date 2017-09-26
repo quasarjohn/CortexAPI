@@ -1,13 +1,11 @@
 package io.cortex.cortexapi.db_models;
 
+import javafx.beans.DefaultProperty;
 import org.hibernate.validator.constraints.Email;
 import org.hibernate.validator.constraints.NotBlank;
 import org.hibernate.validator.constraints.NotEmpty;
 
-import javax.persistence.Column;
-import javax.persistence.Entity;
-import javax.persistence.Id;
-import javax.persistence.Table;
+import javax.persistence.*;
 import javax.validation.constraints.Size;
 
 @Entity
@@ -23,7 +21,7 @@ public class User {
     private String username;
 
     @Column(name = "reputation_score")
-    private int reputationScore = 0;
+    private int reputationScore;
 
     @Column(name = "bio")
     private String bio;
@@ -44,8 +42,18 @@ public class User {
     @Size(min = 8, max = 40)
     private String password;
 
-    @Column(name = "confirmation_code")
-    private int confirmationCode;
+    @Column
+    private String api_key;
+
+    @Column String img_url;
+
+    public String getApi_key() {
+        return api_key;
+    }
+
+    public void setApi_key(String api_key) {
+        this.api_key = api_key;
+    }
 
     public String getEmail() {
         return email;
@@ -87,14 +95,6 @@ public class User {
         this.password = password;
     }
 
-    public int getConfirmationCode() {
-        return confirmationCode;
-    }
-
-    public void setConfirmationCode(int confirmationCode) {
-        this.confirmationCode = confirmationCode;
-    }
-
     public String getUsername() {
         return username;
     }
@@ -117,5 +117,13 @@ public class User {
 
     public void setBio(String bio) {
         this.bio = bio;
+    }
+
+    public String getImg_url() {
+        return img_url;
+    }
+
+    public void setImg_url(String img_url) {
+        this.img_url = img_url;
     }
 }

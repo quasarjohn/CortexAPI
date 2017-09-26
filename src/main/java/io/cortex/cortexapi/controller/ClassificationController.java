@@ -1,11 +1,12 @@
 package io.cortex.cortexapi.controller;
 
-import com.fasterxml.jackson.core.JsonProcessingException;
 import io.cortex.cortexapi.models.classification_models.Classification;
-import io.cortex.cortexapi.models.classification_models.OnlineClassificationService;
+import io.cortex.cortexapi.service.OnlineClassificationService;
 import io.cortex.cortexapi.models.return_models.ReturnCode;
 import io.cortex.cortexapi.models.return_models.ReturnObject;
+import io.cortex.cortexapi.service.UserService;
 import io.cortex.cortexapi.utils.SystemPaths;
+import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
 import org.springframework.util.StringUtils;
@@ -26,6 +27,12 @@ import java.util.stream.Collectors;
 @RequestMapping("/api")
 public class ClassificationController {
 
+    @Autowired
+    UserService userService;
+
+    @Autowired
+    OnlineClassificationService classificationService;
+
     @CrossOrigin(origins = SystemPaths.CROSS_ORIGINS)
     @GetMapping("/{api_key}/classifier/classify_image/{model_key}")
     public ReturnObject classify_image(@PathVariable String api_key,
@@ -37,13 +44,10 @@ public class ClassificationController {
                                                Optional<String> order)
             throws UnsupportedEncodingException {
 
-        System.out.print("CLASSIFICATION FOR " + img_url);
-
 
         ReturnObject returnObject = new ReturnObject();
         returnObject.setCode(ReturnCode.OK);
 
-        OnlineClassificationService classificationService = new OnlineClassificationService();
         returnObject.setContent(classificationService.classifyImage(api_key, model_key, img_url, max_results.get(), order.get()));
 
         return returnObject;
@@ -80,7 +84,7 @@ public class ClassificationController {
             //wait for the file to be written to disk then classify it
             Files.write(path, bytes);
 
-            List<Classification> classifications = new OnlineClassificationService().
+            List<Classification> classifications = classificationService.
                     classifyImage(api_key, model_key, "file:///" + file_path, 5, "probability_desc");
             returnObject.setCode(ReturnCode.OK);
             returnObject.setContent(classifications);

@@ -1,6 +1,11 @@
-package io.cortex.cortexapi.models.classification_models;
+package io.cortex.cortexapi.service;
 
+import io.cortex.cortexapi.db_models.Classifier;
+import io.cortex.cortexapi.db_models.User;
+import io.cortex.cortexapi.models.classification_models.Classification;
 import io.cortex.cortexapi.utils.SystemPaths;
+import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.stereotype.Service;
 import org.tensorflow.*;
 
 import javax.imageio.ImageIO;
@@ -19,7 +24,14 @@ import java.util.ArrayList;
 import java.util.Arrays;
 import java.util.List;
 
+@Service
 public class OnlineClassificationService {
+
+    @Autowired
+    UserService userService;
+
+    @Autowired
+    ClassifierService classifierService;
 
     private static final String PUBLIC_API_KEY = "publicapikey";
 
@@ -45,10 +57,27 @@ public class OnlineClassificationService {
                     break;
             }
         }
+        //check if the api key matches any users
+        else {
+            int count = 0;
+
+            Iterable<User> users = userService.findUserByApiKey(api_key);
+
+            for (User user : users) {
+                System.out.println("Classification by " + user.getEmail());
+                count++;
+            }
+
+            if (count == 0)
+                return null;
+
+            Classifier classifier = classifierService.findClassifierByKey(model_key);
+
+            modelDir = String.format(SystemPaths.CLASSIFIERS_DIR, classifier.getEmail(), classifier.getTitle());
+
+        }
 
         List<Classification> classifications = new ArrayList<>();
-
-        //TODO this is a temporary location. The model dir should be automatically identified based on the model key
 
         byte[] graphDef = readAllBytesOrExit(Paths.get(modelDir, "retrained_graph.pb"));
         List<String> labels =

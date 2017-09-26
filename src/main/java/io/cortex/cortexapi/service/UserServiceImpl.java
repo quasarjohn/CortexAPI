@@ -14,4 +14,9 @@ public class UserServiceImpl implements UserService {
     public User findUserByEmail(String email) {
         return userRepo.findUserByEmail(email);
     }
+
+    @Override
+    public Iterable<User> findUserByApiKey(String api_key) {
+        return userRepo.findUserByApiKey(api_key);
+    }
 }

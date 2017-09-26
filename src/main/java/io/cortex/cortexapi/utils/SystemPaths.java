@@ -4,7 +4,7 @@ package io.cortex.cortexapi.utils;
  * Created by John on 7/15/2017.
  */
 public class SystemPaths {
-    public static final String CROSS_ORIGINS = "http://192.168.0.149:8090";
+    public static final String CROSS_ORIGINS = "http://localhost:8090";
 
     public static final String CORTEX_TF_FILES_PATH = "E:/CORTEX_DATA/classifier/public/%s";
     public static final String CORTEX_CLASSIFICATION_TEMP_PATH = "E:/CORTEX_DATA/classifier/public/%s/tf_files";
