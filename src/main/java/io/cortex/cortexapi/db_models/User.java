@@ -1,6 +1,5 @@
 package io.cortex.cortexapi.db_models;
 
-import javafx.beans.DefaultProperty;
 import org.hibernate.validator.constraints.Email;
 import org.hibernate.validator.constraints.NotBlank;
 import org.hibernate.validator.constraints.NotEmpty;

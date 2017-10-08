@@ -241,7 +241,7 @@ public class TrainingController {
         String file_path = String.format(UPLOADED_FOLDER, api_key) + "/" + file_name_with_extension;
 
         //upload file
-        uploadFile(Arrays.asList(uploadFiles), returnObject, file_path);
+        uploadFile(Arrays.asList(uploadFiles), returnObject, file_path, api_key);
         //unzip file
         unzipUtility.unzip(file_path, String.format(UPLOADED_FOLDER, api_key));
 
@@ -270,46 +270,37 @@ public class TrainingController {
                 //submit process in the listening executor service for update when process is completed
                 ListenableFuture<Process> listenableProcess = listeningExecutorService.submit(() -> {
                     //wait for completion of training process then update processes hashmap
+                    process.waitFor();
+                    processes.get(api_key).setStatus(TrainingProcess.TrainingStatus.TRAINING_COMPLETE);
 
-                    //TODO this is a premature write to the database and metadata so I can already see if it works before the training is done kasi naman ang tagal nia matapos :(.
+
 //                    FileWriter writer = new FileWriter(new File(new_file_path + "/metadata"));
 //                    writer.write(processes.get(api_key).getSteps());
 
+                    //write METADATA TO TEXT FILE
+
                     TrainingProcess process1 = processes.get(api_key);
-                    System.out.println("PRINTING METADATA");
-                    System.out.println(process1);
                     try {
                         Utils.writeMetaData(processes.get(process1), new_file_path + "/metadata");
                     } catch (IOException e) {
                         e.printStackTrace();
                     }
 
-                    process.waitFor();
-                    processes.get(api_key).setStatus(TrainingProcess.TrainingStatus.TRAINING_COMPLETE);
-
-                    //write metadata and insert classifier to database after training
-                    try {
-                        Utils.writeMetaData(processes.get(api_key), new_file_path + "/metadata");
-                    } catch (IOException e) {
-                        e.printStackTrace();
-                    }
-
+                    //insert data of the classifier to database
                     Classifier classifier = new Classifier();
+                    //TODO find email by api. I'm not sure though if the api key being passed is actually the email
                     classifier.setEmail(api_key);
 
                     String model_key = UUID.randomUUID().toString().substring(1, 10);
                     classifier.setKey(model_key);
                     classifier.setTitle(category);
-                    classifierService.save(classifier);
+//                    classifierService.save(classifier);
                     return null;
                 });
 
                 Futures.addCallback(listenableProcess, new FutureCallback<Process>() {
                     @Override
                     public void onSuccess(@Nullable Process process) {
-
-                        //insert data of the classifier to database
-
                         System.out.println("TRAINING SUCCESS");
                         try {
                             //delete temp files
@@ -342,16 +333,24 @@ public class TrainingController {
                 trainingProcess.setSteps(training_steps);
                 trainingProcess.setStatus(TrainingProcess.TrainingStatus.TRAINING);
                 trainingProcess.setUser(api_key);
-                trainingProcess.setFile_count(file_count);
+                trainingProcess.setFile_count(1000);
                 processes.put(api_key, trainingProcess);
 
-                System.out.println("WRITING METADATA");
-//                //TODO I already write metadata when the user starts training. It should be added after training so we get the proper training data
+                //TODO I already write metadata when the user starts training. It should be added after training so we get the proper training data
                 try {
                     Utils.writeMetaData(trainingProcess, new_file_path + "/metadata");
                 } catch (IOException e) {
                     e.printStackTrace();
                 }
+
+                //TODO this is an early write to the database. must be removed after the test is done
+                Classifier classifier = new Classifier();
+                classifier.setEmail(api_key);
+                String model_key = UUID.randomUUID().toString().substring(1, 10);
+                classifier.setKey(model_key);
+                classifier.setTitle(category);
+                classifierService.save(classifier);
+
             });
             returnObject.setCode(ReturnCode.OK);
             return new ResponseEntity<Object>(returnObject, HttpStatus.OK);
@@ -361,7 +360,11 @@ public class TrainingController {
         }
     }
 
-    private void uploadFile(List<MultipartFile> files, ReturnObject returnObject, String file_path) throws IOException {
+    private void uploadFile(List<MultipartFile> files, ReturnObject returnObject, String file_path, String api_key) throws IOException {
+
+        String path = String.format(SystemPaths.CORTEX_TRAINING_TEMP, api_key);
+        File dir = new File(path);
+        dir.mkdirs();
 
         for (MultipartFile file : files) {
 

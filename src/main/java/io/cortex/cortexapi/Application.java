@@ -24,7 +24,7 @@ import java.util.concurrent.Executor;
 public class Application {
 
     public static void main(String[] args) throws SQLException {
-//        Server.createTcpServer("-tcpPort", "9092", "-tcpAllowOthers").start();
+        Server.createTcpServer("-tcpPort", "9092", "-tcpAllowOthers").start();
         SpringApplication.run(Application.class, args);
     }
 
