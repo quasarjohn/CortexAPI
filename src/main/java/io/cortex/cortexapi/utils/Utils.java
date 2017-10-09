@@ -31,7 +31,6 @@ public class Utils {
 
     public static ReturnableTrainingProcess mapTrainingProcess(TrainingProcess trainingProcess) {
         ReturnableTrainingProcess returnableTrainingProcess = new ReturnableTrainingProcess();
-
         returnableTrainingProcess.setLabels(trainingProcess.getLabels());
         returnableTrainingProcess.setModel_name(trainingProcess.getModel_name());
         returnableTrainingProcess.setRuntime(trainingProcess.getProcess().info().totalCpuDuration().get().toSeconds() + "");

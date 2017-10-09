@@ -186,6 +186,11 @@ public class TrainingController {
             double current_step = FileUtils.readDouble(path + "counter_log");
             String current_log = FileUtils.readString(path + "single_log");
 
+            System.out.println("-------------------------------------TRAINING PERCENTAGE------------------------------------");
+            System.out.println("CURRENT STEP:" + current_step);
+            System.out.println("TOTAL: " + (process.getFile_count() + process.getSteps()));
+            System.out.println("CALCULATED: " + current_step / (process.getFile_count() + process.getSteps()));
+
             double percentage = 100 * (current_step / (process.getFile_count() + process.getSteps()));
             returnObject.setCode(ReturnCode.OK);
 
@@ -271,30 +276,24 @@ public class TrainingController {
                 ListenableFuture<Process> listenableProcess = listeningExecutorService.submit(() -> {
                     //wait for completion of training process then update processes hashmap
                     process.waitFor();
-                    processes.get(api_key).setStatus(TrainingProcess.TrainingStatus.TRAINING_COMPLETE);
 
+                    TrainingProcess trainingProcess = processes.get(api_key);
 
-//                    FileWriter writer = new FileWriter(new File(new_file_path + "/metadata"));
-//                    writer.write(processes.get(api_key).getSteps());
-
-                    //write METADATA TO TEXT FILE
-
-                    TrainingProcess process1 = processes.get(api_key);
                     try {
-                        Utils.writeMetaData(processes.get(process1), new_file_path + "/metadata");
+                        Utils.writeMetaData(trainingProcess, new_file_path + "/metadata");
                     } catch (IOException e) {
                         e.printStackTrace();
                     }
 
-                    //insert data of the classifier to database
                     Classifier classifier = new Classifier();
-                    //TODO find email by api. I'm not sure though if the api key being passed is actually the email
                     classifier.setEmail(api_key);
-
                     String model_key = UUID.randomUUID().toString().substring(1, 10);
                     classifier.setKey(model_key);
                     classifier.setTitle(category);
-//                    classifierService.save(classifier);
+                    classifierService.save(classifier);
+
+                    trainingProcess.setStatus(TrainingProcess.TrainingStatus.TRAINING_COMPLETE);
+
                     return null;
                 });
 
@@ -333,24 +332,8 @@ public class TrainingController {
                 trainingProcess.setSteps(training_steps);
                 trainingProcess.setStatus(TrainingProcess.TrainingStatus.TRAINING);
                 trainingProcess.setUser(api_key);
-                trainingProcess.setFile_count(1000);
+                trainingProcess.setFile_count(file_count);
                 processes.put(api_key, trainingProcess);
-
-                //TODO I already write metadata when the user starts training. It should be added after training so we get the proper training data
-                try {
-                    Utils.writeMetaData(trainingProcess, new_file_path + "/metadata");
-                } catch (IOException e) {
-                    e.printStackTrace();
-                }
-
-                //TODO this is an early write to the database. must be removed after the test is done
-                Classifier classifier = new Classifier();
-                classifier.setEmail(api_key);
-                String model_key = UUID.randomUUID().toString().substring(1, 10);
-                classifier.setKey(model_key);
-                classifier.setTitle(category);
-                classifierService.save(classifier);
-
             });
             returnObject.setCode(ReturnCode.OK);
             return new ResponseEntity<Object>(returnObject, HttpStatus.OK);
