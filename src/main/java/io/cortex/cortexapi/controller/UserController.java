@@ -33,16 +33,19 @@ public class UserController {
         //check every folder of the user containing a classifier model
         File folder_files = new File(user_classifiers_path);
 
-        //for every folder, check metadata and map it to a classifier object
-        for (File f : folder_files.listFiles()) {
-            CortexClassifier classifier;
-            ObjectMapper mapper = new ObjectMapper();
-            try {
-                classifier = mapper.readValue(new File(f.getPath() + "/metadata"), CortexClassifier.class);
-                classifiers.add(classifier);
-            } catch (IOException e) {
-                e.printStackTrace();
-                return returnObject;
+        File[] files = folder_files.listFiles();
+        if (files != null) {
+            //for every folder, check metadata and map it to a classifier object
+            for (File f : files) {
+                CortexClassifier classifier;
+                ObjectMapper mapper = new ObjectMapper();
+                try {
+                    classifier = mapper.readValue(new File(f.getPath() + "/metadata"), CortexClassifier.class);
+                    classifiers.add(classifier);
+                } catch (IOException e) {
+                    e.printStackTrace();
+                    return returnObject;
+                }
             }
         }
 
