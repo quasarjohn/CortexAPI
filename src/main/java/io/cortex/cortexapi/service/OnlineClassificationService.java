@@ -53,6 +53,9 @@ public class OnlineClassificationService {
                 case "hand_gestures":
                     modelDir = String.format(SystemPaths.CLASSIFIERS_DIR, "demo", "hand_gestures");
                     break;
+                case "Dogs":
+                    modelDir = String.format(SystemPaths.CLASSIFIERS_DIR, "demo", "Dogs");
+                    break;
                 default:
                     break;
             }
