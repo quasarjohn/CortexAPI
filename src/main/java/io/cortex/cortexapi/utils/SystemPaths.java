@@ -24,6 +24,6 @@ public class SystemPaths {
     public static final String MODEL_DIR = "E:/tf_files/";
 
 
-    public static final String CLASSIFIERS_DIR = "E:/CORTEX_DATA/classifier/public/%s/%s/";
+    public static final String CLASSIFIERS_DIR = "E:/CORTEX_DATA/classifier/public/%s/models/%s/";
 
 }

@@ -75,9 +75,8 @@ public class OnlineClassificationService {
                 return null;
 
             Classifier classifier = classifierService.findClassifierByKey(model_key);
-
-            modelDir = String.format(SystemPaths.CLASSIFIERS_DIR, classifier.getEmail(), classifier.getTitle());
-
+            modelDir = String.format(SystemPaths.CLASSIFIERS_DIR,
+                    classifier.getEmail(), classifier.getTitle());
         }
 
         List<Classification> classifications = new ArrayList<>();
