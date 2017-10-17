@@ -49,6 +49,7 @@ public class Utils {
         classifier.setTraining_steps(trainingProcess.getSteps());
         classifier.setFile_count(trainingProcess.getFile_count());
         classifier.setLabels(trainingProcess.getLabels());
+        classifier.setModel_key(trainingProcess.getModel_key());
 
         ObjectMapper mapper = new ObjectMapper();
 

@@ -287,8 +287,7 @@ public class TrainingController {
 
                     Classifier classifier = new Classifier();
                     classifier.setEmail(api_key);
-                    String model_key = UUID.randomUUID().toString().substring(1, 10);
-                    classifier.setKey(model_key);
+                    classifier.setKey(trainingProcess.getModel_key());
                     classifier.setTitle(category);
                     classifierService.save(classifier);
 
@@ -333,6 +332,8 @@ public class TrainingController {
                 trainingProcess.setStatus(TrainingProcess.TrainingStatus.TRAINING);
                 trainingProcess.setUser(api_key);
                 trainingProcess.setFile_count(file_count);
+                String model_key = UUID.randomUUID().toString().substring(1, 10);
+                trainingProcess.setModel_key(model_key);
                 processes.put(api_key, trainingProcess);
             });
             returnObject.setCode(ReturnCode.OK);

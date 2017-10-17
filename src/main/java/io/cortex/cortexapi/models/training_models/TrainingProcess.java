@@ -12,6 +12,15 @@ public class TrainingProcess {
     private Process process;
     private int file_count;
     private int steps;
+    private String model_key;
+
+    public String getModel_key() {
+        return model_key;
+    }
+
+    public void setModel_key(String model_key) {
+        this.model_key = model_key;
+    }
 
     public Process getProcess() {
         return process;

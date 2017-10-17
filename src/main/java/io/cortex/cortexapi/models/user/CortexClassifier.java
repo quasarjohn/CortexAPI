@@ -9,6 +9,7 @@ public class CortexClassifier {
     private String accuracy;
     private int training_steps, file_count;
     private ArrayList<String> labels;
+    private String model_key;
 
     public String getTitle() {
         return title;
@@ -64,5 +65,13 @@ public class CortexClassifier {
 
     public void setFile_count(int file_count) {
         this.file_count = file_count;
+    }
+
+    public String getModel_key() {
+        return model_key;
+    }
+
+    public void setModel_key(String model_key) {
+        this.model_key = model_key;
     }
 }
